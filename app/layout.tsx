@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Sidebar from "@/components/sidebar"; // Sidebarをインポート
+import { Input } from "@/components/ui/input"; // Inputをインポート
+import { Menu } from "lucide-react"; // Menuをインポート
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +19,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <div className="flex h-screen bg-gray-100">
+          <Sidebar />
+          <main className="flex-1 overflow-auto">
+            <header className="bg-white border-b p-4 flex justify-between items-center">
+              <h2 className="text-xl font-semibold">ホーム</h2>
+              <Input className="w-1/3" placeholder="グループ・チャット・ユーザーを検索" />
+              <Menu className="text-gray-500" />
+            </header>
+            {children} {/* 子コンポーネントをここに表示 */}
+          </main>
+        </div>
+      </body>
     </html>
   );
 }

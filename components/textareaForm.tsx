@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/use-toast"
+import { Thread } from "@/components/types"  // types.ts からインポート
 
 const FormSchema = z.object({
   bio: z
@@ -28,14 +29,27 @@ const FormSchema = z.object({
     }),
 })
 
-export function TextareaForm() {
+export function TextareaForm({ addThread }: { addThread: (thread: Thread) => void }) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   })
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
+    const newThread: Thread = {
+      author: "新しいユーザー",
+      date: new Date().toLocaleString(),
+      content: data.bio,
+      reactions: "👍",
+      reactionCount: 0,
+      commentCount: 0,
+      shareCount: 0,
+      comments: [],
+    }
+    
+    addThread(newThread) // 新しいスレッドを追加
+
     toast({
-      title: "You submitted the following values:",
+      title: "投稿が完了しました！",
       description: (
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
           <code className="text-white">{JSON.stringify(data, null, 2)}</code>
@@ -52,23 +66,17 @@ export function TextareaForm() {
           name="bio"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Bio</FormLabel>
+              <FormLabel>投稿内容</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Tell us a little bit about yourself"
-                  className="resize-none"
-                  {...field}
-                />
+                <Textarea placeholder="ここに投稿内容を書いてください" className="resize-none" {...field} />
               </FormControl>
-              <FormDescription>
-                You can <span>@mention</span> other users and organizations.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit">投稿する</Button>
       </form>
     </Form>
   )
+
 }

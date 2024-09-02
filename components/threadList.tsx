@@ -3,23 +3,7 @@ import { Bell, MessageCircle, Search, User, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
-interface Thread {
-  author: string;
-  date: string;
-  content: string;
-  reactions: string;
-  reactionCount: number;
-  commentCount: number;
-  shareCount: number;
-  comments: Comment[];
-}
-
-interface Comment {
-  author: string;
-  content: string;
-  date: string;
-}
+import { Thread } from "@/components/types"  // types.ts からインポート
 const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
   <div className="bg-white rounded-lg shadow mb-4">
     <div className="p-4">
@@ -77,6 +61,7 @@ export default function ThreadList({ threads }: { threads: Thread[] }) {
         <div className="max-w-3xl mx-auto p-4 space-y-4">
           {threads.map((thread, index) => (
             <ThreadCard key={index} thread={thread} />
+            
           ))}
         </div>
       </main>

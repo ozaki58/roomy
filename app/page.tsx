@@ -1,12 +1,18 @@
+"use client"; // これを追加
+
 import Header from "@/components/header";
 import Image from "next/image";
 
 import ThreadList from '@/components/threadList'
 
 import { TextareaForm } from "@/components/textareaForm";
-
+import BottomNavigation from "@/components/bottom-navigation";
+import React,{useState} from "react"
+import { Thread } from "@/components/types"  // types.ts からインポート
+import Sidebar from "@/components/sidebar";
 export default function App() {
-  const threadsData = [
+  
+  const [threadsData,setThreadsData] = useState<Thread[]>( [
     {
       author: "ひらりん@",
       date: "2024年8月17日 午前12:34",
@@ -25,17 +31,22 @@ export default function App() {
           author: "s819ひーし",
           content: "😭😭😭私のSERVERも bot altが処分されたのですが その原因が私のせいにされて　　SERVERでの私の居場所がなくなりました。...",
           date: "8月27日 午後7:49"
-        }
-      ]
+        },
+      ],
     },
-    
-    // Add more thread objects here...
-  ]
+  ])
+
+  const addThread = (newThread: Thread) => {
+    setThreadsData([newThread, ...threadsData]) // 新しいスレッドを先頭に追加
+  }
+
   return (
     <>
-    <Header />
+    
+    <TextareaForm addThread={addThread} />
     <ThreadList threads={threadsData} />
-    <TextareaForm />
+    
+    
     </>
     
   )
