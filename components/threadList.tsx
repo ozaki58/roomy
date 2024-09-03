@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Thread } from "@/components/types"  // types.ts からインポート
+import ReplyBanner from "@/components/replyBanner"
 const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
-  <div className="bg-white rounded-lg shadow mb-4">
+  <div className="bg-white rounded-lg shadow mb-0">
     <div className="p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
@@ -58,11 +59,14 @@ export default function ThreadList({ threads }: { threads: Thread[] }) {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       <main className="flex-1 overflow-auto">
+        
         <div className="max-w-3xl mx-auto p-4 space-y-4">
-          {threads.map((thread, index) => (
-            <ThreadCard key={index} thread={thread} />
-            
-          ))}
+        {threads.map((thread, index) => (
+            <div key={index} className="mb-0">  
+              <ThreadCard thread={thread} />
+              <ReplyBanner comnentCount={thread.commentCount}/>
+            </div>
+          ))} 
         </div>
       </main>
     </div>

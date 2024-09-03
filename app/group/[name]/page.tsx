@@ -15,7 +15,7 @@ export default function GroupPage() {
           content: "皆さん、こんばんは。実はうちのチームのメンバーが...",
           reactions: "👍😢",
           reactionCount: 6,
-          commentCount: 27,
+          commentCount: 4,
           shareCount: 1,
           comments: [
             {

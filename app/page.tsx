@@ -19,7 +19,7 @@ export default function App() {
       content: "皆さん、こんばんは。実はうちのチームのメンバーが...",
       reactions: "👍😢",
       reactionCount: 6,
-      commentCount: 27,
+      commentCount: 3,
       shareCount: 1,
       comments: [
         {
