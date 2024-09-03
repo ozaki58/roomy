@@ -1,0 +1,28 @@
+{
+    "favoriteGroups": [
+        {
+            "id": 1,
+            "name": "モンスト",
+            "description": "モンストが好きな人たちのためのグループです。",
+            "members": 150,
+            "isPublic": true,
+            "createdAt": "2023-01-15T12:00:00Z"
+        },
+        {
+            "id": 2,
+            "name": "ふぁふぁ愛好者",
+            "description": "RPGゲームについて語り合うグループです。",
+            "members": 200,
+            "isPublic": true,
+            "createdAt": "2023-02-20T15:30:00Z"
+        },
+        {
+            "id": 3,
+            "name": "呈すクラブ",
+            "description": "戦ふぁふぁを楽しむ仲間が集まる場所です。",
+            "members": 75,
+            "isPublic": true,
+            "createdAt": "2023-03-10T09:45:00Z"
+        }
+    ]
+}
