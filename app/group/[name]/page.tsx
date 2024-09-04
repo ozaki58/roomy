@@ -15,13 +15,16 @@ export default function GroupPage() {
     
       const addThread = (newThread: Thread) => {
         setThreadsData([newThread, ...threadsData]) // 新しいスレッドを先頭に追加
+        console.log("Updated threads:", [newThread, ...threadsData]);
       }
+      
     
  return (
         <div className="p-6">
             <h1 className="text-3xl font-bold">{groupName} グループ</h1>
             <p>このグループには、たくさんのメンバーが参加しています。</p>
             <TextareaForm addThread={addThread} />
+        
             <ThreadList threads={threadsData} />
         </div>
     );

@@ -1,8 +1,9 @@
 import React from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Thread } from "@/components/types"  // types.ts からインポート
+import { Thread, Comment } from "@/components/types"  // types.ts からインポート
 import ReplyBanner from "@/components/replyBanner"
 import Modal from "./modal"
+import { TextareaForm } from "./textareaForm"
 
 // ThreadCard コンポーネント
 const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
@@ -53,10 +54,11 @@ const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
 );
 
 // ThreadList コンポーネント
-export default function ThreadList({ threads }: { threads: Thread[] }) {
+export default function ThreadList({ threads: initialThreads }: { threads: Thread[] }) {
   const [selectedThreadIndex, setSelectedThreadIndex] = React.useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
-
+  const [threads, setThreads] = React.useState<Thread[]>(initialThreads);  // ここで全体の状態を持つ
+  
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedThreadIndex(null);
@@ -67,11 +69,25 @@ export default function ThreadList({ threads }: { threads: Thread[] }) {
     setIsModalOpen(true); // モーダルを開く
   };
 
+  const addComment = (newComment: Comment) => {
+    if (selectedThreadIndex !== null) {
+      const updatedThread = {
+        ...threads[selectedThreadIndex],
+        comments: [...threads[selectedThreadIndex].comments, newComment], // 既存のコメントに新しいコメントを追加
+      };
+
+      const updatedThreads = [...threads];
+      updatedThreads[selectedThreadIndex] = updatedThread; // スレッドリストを更新
+
+      setThreads(updatedThreads); // 全体のスレッドリストを更新
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       <main className="flex-1 overflow-auto">
         <div className="max-w-3xl mx-auto p-4 space-y-4">
-          {threads.map((thread, index) => (
+          {initialThreads.map((thread, index) => (
             <div key={index} className="mb-0">
               <ThreadCard thread={{ ...thread, comments: thread.comments.slice(0, 2) }} />
               <ReplyBanner comnentCount={thread.commentCount} index={index} onReplyClick={handleReplyClick} />
@@ -87,6 +103,7 @@ export default function ThreadList({ threads }: { threads: Thread[] }) {
             <h2 className="text-xl font-semibold mb-4">返信スレッド</h2>
             {/* 選択されたスレッドの詳細を表示 */}
             <ThreadCard thread={threads[selectedThreadIndex]} />
+            <TextareaForm addComment={addComment} />
           </div>
         )}
       </Modal>
