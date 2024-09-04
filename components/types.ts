@@ -6,6 +6,7 @@ export interface Comment {
   }
   
   export interface Thread {
+    id:number;
     author: string;
     date: string;
     content: string;

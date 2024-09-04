@@ -25,6 +25,7 @@ export function TextareaForm({ addThread, addComment }: { addThread?: (thread: T
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const newThread: Thread = {
+      id: Math.floor(Math.random() * 1000),
       author: "新しいユーザー",
       date: new Date().toLocaleString(),
       content: data.bio,

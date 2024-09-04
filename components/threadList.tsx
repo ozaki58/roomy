@@ -4,7 +4,7 @@ import { Thread, Comment } from "@/components/types"; // types.ts からイン�
 import ReplyBanner from "@/components/replyBanner";
 import Modal from "./modal";
 import { TextareaForm } from "./textareaForm";
-
+import { useEffect, useState } from "react";
 // ThreadCard コンポーネント
 const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
   <div className="bg-white rounded-lg shadow mb-0">
@@ -55,33 +55,41 @@ const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
 
 // ThreadList コンポーネント
 export default function ThreadList({ threads: initialThreads }: { threads: Thread[] }) {
-  const [selectedThread, setSelectedThread] = React.useState<Thread | null>(null); // スレッドオブジェクトで状態を管理
-  const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
-  const [threads, setThreads] = React.useState<Thread[]>(initialThreads); // 全体の状態を持つ
-  
+  const [threads, setThreads] = useState(initialThreads);
+  const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    setThreads(initialThreads);
+  }, [initialThreads]);
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedThread(null);
   };
 
-  const handleReplyClick = (thread: Thread) => {
-    setSelectedThread(thread); // クリックされたスレッド自体を設定
-    setIsModalOpen(true); // モーダルを開く
+  const handleReplyClick = (thread: Thread) => { // 型を指定
+    setSelectedThread(thread);
+    setIsModalOpen(true);
   };
 
   const addComment = (newComment: Comment) => {
-    if (selectedThread !== null) {
-      const updatedThread = {
-        ...selectedThread,
-        comments: [...selectedThread.comments, newComment], // 既存のコメントに新しいコメントを追加
-      };
-
-      const updatedThreads = threads.map(thread =>
-        thread === selectedThread ? updatedThread : thread // 正しいスレッドを更新
+    if (selectedThread) {
+      const updatedThreads = threads.map((thread) =>
+        thread.id === selectedThread.id
+          ? {
+              ...thread,
+              comments: [...thread.comments, newComment],
+              commentCount: thread.commentCount + 1,
+            }
+          : thread
       );
-
-      setThreads(updatedThreads); // 全体のスレッドリストを更新
-      setSelectedThread(updatedThread); // モーダル内でも更新されたスレッドを表示
+      setThreads(updatedThreads);
+      setSelectedThread({
+        ...selectedThread,
+        comments: [...selectedThread.comments, newComment],
+        commentCount: selectedThread.commentCount + 1,
+      });
     }
   };
 
@@ -89,21 +97,22 @@ export default function ThreadList({ threads: initialThreads }: { threads: Threa
     <div className="flex flex-col h-screen bg-gray-100">
       <main className="flex-1 overflow-auto">
         <div className="max-w-3xl mx-auto p-4 space-y-4">
-          {initialThreads.map((thread, index) => (
-            <div key={index} className="mb-0">
+          {threads.map((thread, index) => (
+            <div key={thread.id || index} className="mb-0">
               <ThreadCard thread={{ ...thread, comments: thread.comments.slice(0, 2) }} />
-              <ReplyBanner comnentCount={thread.commentCount} index={index} onReplyClick={() => handleReplyClick(thread)} />
+              <ReplyBanner
+                commentCount={thread.commentCount}
+                onReplyClick={() => handleReplyClick(thread)}
+              />
             </div>
           ))}
         </div>
       </main>
 
-      {/* モーダルを開く処理 */}
       <Modal isOpen={isModalOpen} onClose={closeModal} size="xl">
-        {selectedThread !== null && (
+        {selectedThread && (
           <div>
             <h2 className="text-xl font-semibold mb-4">返信スレッド</h2>
-            {/* 選択されたスレッドの詳細を表示 */}
             <ThreadCard thread={selectedThread} />
             <TextareaForm addComment={addComment} />
           </div>
