@@ -1,10 +1,10 @@
 import React from "react"
-import { Bell, MessageCircle, Search, User, MoreHorizontal } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Thread } from "@/components/types"  // types.ts からインポート
 import ReplyBanner from "@/components/replyBanner"
+import Modal from "./modal"
+
+// ThreadCard コンポーネント
 const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
   <div className="bg-white rounded-lg shadow mb-0">
     <div className="p-4">
@@ -19,9 +19,6 @@ const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
             <div className="text-sm text-gray-500">{thread.date}</div>
           </div>
         </div>
-        <Button variant="ghost" size="icon">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
       </div>
       <p className="mb-4">{thread.content}</p>
       <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -53,22 +50,46 @@ const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
       </div>
     </div>
   </div>
-)
+);
 
+// ThreadList コンポーネント
 export default function ThreadList({ threads }: { threads: Thread[] }) {
+  const [selectedThreadIndex, setSelectedThreadIndex] = React.useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedThreadIndex(null);
+  };
+
+  const handleReplyClick = (index: number) => {
+    setSelectedThreadIndex(index); // クリックされたスレッドのインデックスを設定
+    setIsModalOpen(true); // モーダルを開く
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       <main className="flex-1 overflow-auto">
-        
         <div className="max-w-3xl mx-auto p-4 space-y-4">
-        {threads.map((thread, index) => (
-            <div key={index} className="mb-0">  
-              <ThreadCard thread={thread} />
-              <ReplyBanner comnentCount={thread.commentCount}/>
+          {threads.map((thread, index) => (
+            <div key={index} className="mb-0">
+              <ThreadCard thread={{ ...thread, comments: thread.comments.slice(0, 2) }} />
+              <ReplyBanner comnentCount={thread.commentCount} index={index} onReplyClick={handleReplyClick} />
             </div>
-          ))} 
+          ))}
         </div>
       </main>
+
+      {/* モーダルを開く処理 */}
+      <Modal isOpen={isModalOpen} onClose={closeModal} size="xl">
+        {selectedThreadIndex !== null && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">返信スレッド</h2>
+            {/* 選択されたスレッドの詳細を表示 */}
+            <ThreadCard thread={threads[selectedThreadIndex]} />
+          </div>
+        )}
+      </Modal>
     </div>
-  )
+  );
 }
