@@ -1,5 +1,5 @@
 "use client"; // これを追加
-import { Bell, Home, Search, Settings, User } from "lucide-react";
+import { Bell, Home, Search, Settings, User, CirclePlus } from "lucide-react";
 import { useState } from "react";
 
 export default function Sidebar() {
@@ -18,7 +18,8 @@ export default function Sidebar() {
                 <svg
                     onClick={() => setShowSidebar(!showSidebar)}
                     className="fixed z-30 flex items-center cursor-pointer right-10 top-6"
-                    fill="#2563EB"
+                    fill="#FFFFFF"
+                    
                     viewBox="0 0 100 80"
                     width="40"
                     height="40"
@@ -46,6 +47,10 @@ export default function Sidebar() {
                         <a href="#" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
                             <Search className="mr-3" />
                             探索
+                        </a>
+                        <a href="/createGroup" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
+                            <CirclePlus className="mr-3" />
+                            グループ作成
                         </a>
                         <a href="#" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
                             <Bell className="mr-3" />
