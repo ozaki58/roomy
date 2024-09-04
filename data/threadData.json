@@ -1,0 +1,28 @@
+{
+    "threadData": [
+        {
+            "author": "User1",
+            "date": "2023-08-01",
+            "content": "これはだだスレッドです。",
+            "reactions": "👍",
+            "reactionCount": 10,
+            "commentCount": 5,
+            "shareCount": 3,
+            "comments": [
+                { "author": "User2", "content": "いいね！", "date": "2023-08-01" }
+            ]
+        },
+        {
+            "author": "User3",
+            "date": "2023-08-02",
+            "content": "こふぁふぁふぁスレッドです。",
+            "reactions": "👍",
+            "reactionCount": 7,
+            "commentCount": 3,
+            "shareCount": 2,
+            "comments": [
+                { "author": "User4", "content": "同意します。", "date": "2023-08-02" }
+            ]
+        }
+    ]
+}
