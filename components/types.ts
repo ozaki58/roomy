@@ -17,3 +17,25 @@ export interface Comment {
     comments: Comment[];
   }
   
+  export interface User {
+    id: number;
+    name: string;
+    email: string;
+    avatar: string;
+
+  }
+
+  export interface Group {
+    id: number;
+    name: string;
+    members: User[];
+   
+    description: string;
+    image: string;
+   
+    isPublic: boolean;
+    createdAt: string;
+    threads: Thread[];
+  }
+
+

@@ -4,6 +4,7 @@
             "id": 1,
             "name": "アクションゲームファン",
             "description": "アクションゲームが好きな人たちのためのグループです。",
+            "image": "https://via.placeholder.com/150",
             "members": 150,
             "isPublic": true,
             "createdAt": "2023-01-15T12:00:00Z"
@@ -12,6 +13,7 @@
             "id": 2,
             "name": "RPG愛好者",
             "description": "RPGゲームについて語り合うグループです。",
+            "image": "https://via.placeholder.com/150",
             "members": 200,
             "isPublic": true,
             "createdAt": "2023-02-20T15:30:00Z"
@@ -20,6 +22,7 @@
             "id": 3,
             "name": "戦略ゲームクラブ",
             "description": "戦略ゲームを楽しむ仲間が集まる場所です。",
+            "image": "https://via.placeholder.com/150",
             "members": 75,
             "isPublic": true,
             "createdAt": "2023-03-10T09:45:00Z"

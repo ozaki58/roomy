@@ -44,7 +44,7 @@ export default function Sidebar() {
                             <Home className="mr-3" />
                             ホーム
                         </a>
-                        <a href="#" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
+                        <a href="/searchGroup" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
                             <Search className="mr-3" />
                             探索
                         </a>
