@@ -21,7 +21,7 @@ export default function Modal({ isOpen, onClose, children, size = 'md' }: ModalP
       <div className={`bg-white p-6 rounded-lg shadow-lg relative ${sizeClasses[size]} m-4 max-h-[90vh] overflow-auto`}>
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
         >
           ×
         </button>

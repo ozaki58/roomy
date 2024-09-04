@@ -16,7 +16,7 @@ export default function ReplyBanner({ commentCount, onReplyClick }: ReplyBannerP
       >
         {commentCount}件の返信
       </button>
-      {/* 「戻る」ボタンは現在の実装では必要ないようなので削除しました */}
+     
     </div>
   );
 }

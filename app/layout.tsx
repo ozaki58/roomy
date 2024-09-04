@@ -3,8 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/sidebar"; // Sidebarをインポート
 import { Input } from "@/components/ui/input"; // Inputをインポート
-import { Menu } from "lucide-react"; // Menuをインポート
-
+import {  Menu } from "lucide-react"; // Menuをインポート
+import Link from "next/link";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -24,7 +24,9 @@ export default function RootLayout({
           <Sidebar />
           <main className="flex-1 overflow-auto">
             <header className="bg-white border-b p-4 flex justify-between items-center">
-              <h2 className="text-xl font-semibold">ホーム</h2>
+              <Link href="/home">
+              <h2 className="text-2xl font-bold" >roomy</h2>
+              </Link>
               <Input className="w-1/3" placeholder="グループ・チャット・ユーザーを検索" />
               <Menu className="text-gray-500" />
             </header>
