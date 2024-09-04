@@ -3,8 +3,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/sidebar"; // Sidebarをインポート
 import { Input } from "@/components/ui/input"; // Inputをインポート
-import { Menu } from "lucide-react"; // Menuをインポート
+import { Menu, UserIcon } from "lucide-react"; // Menuをインポート
 import Link from "next/link";
+import { Bell } from "lucide-react";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -27,7 +29,7 @@ export default function RootLayout({
               <Link href="/home">
                 <h2 className="text-2xl font-bold text-white" >roomy</h2> {/* 文字色を白に変更 */}
               </Link>
-              <Input className="w-1/3" placeholder="グループ・チャット・ユーザーを検索" />
+              
               <Menu className="text-orange-600" />
             </header>
             {children} {/* 子コンポーネントをここに表示 */}

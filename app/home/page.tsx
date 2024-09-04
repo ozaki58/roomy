@@ -6,7 +6,7 @@ import { useState } from "react";
 import publicGroupsData from "@/data/publicGroup.json";
 import privateGroupsData from "@/data/privateGroup.json"; // 修正: データのラップされたキー名を考慮
 import favoriteGroupsData from "@/data/favoriteGroup.json";
-
+import { Input } from "@/components/ui/input";
 export default function Page() {
     interface Group {
         id: number;
@@ -18,29 +18,27 @@ export default function Page() {
     }
 
     const [groupData, setGroupData] = useState<Group[]>(favoriteGroupsData.favoriteGroups); // 修正: おすすめグループを初期値に設定
-    const [borderColor, setBorderColor] = useState("");
-    const [textColor, setTextColor] = useState("text-gray-500");
-
-    const onFavoriteClick = () => {
-        setGroupData(favoriteGroupsData.favoriteGroups);
-        setBorderColor("border-b-2 border-orange-500");
-        setTextColor("text-orange-500");
-    }
-    const onpublicClick = () => {
-        setGroupData(publicGroupsData.publicGroups);
-        setBorderColor("border-b-2 border-orange-500");
-        setTextColor("text-orange-500");
-    }
-    const onPrivateClick = () => {
-        setGroupData(privateGroupsData.privateGroups);
-        setBorderColor("border-b-2 border-orange-500");
-        setTextColor("text-orange-500");
-    }
+    
+    
     
     const [activeButton, setActiveButton] = useState<string>("recommended"); // 修正: アクティブなボタンを管理
-
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const filteredGroups = groupData.filter(group => 
+        group.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    
     return (
         <div className="p-6">
+            <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Input
+              type="search"
+              placeholder="グループ・チャット・ユーザーを検索"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full"
+            />
+            </div>
             <div className="mb-6 flex border-b">
                 <button
                     className={`px-4 py-2 ${activeButton === "recommended" ? "text-orange-500 border-b-2 border-orange-500" : "text-gray-500"}`} // 修正: アクティブなボタンのスタイル
@@ -72,7 +70,7 @@ export default function Page() {
             </div>
 
             <div className="space-y-4">
-                {groupData.map((game: Group, index) => (
+                {filteredGroups.map((game: Group, index) => (
                     <Link
                         key={index}
                         href={`/group/${game.name}`}
