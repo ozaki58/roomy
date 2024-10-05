@@ -52,11 +52,11 @@ export default function Sidebar() {
                             <CirclePlus className="mr-3" />
                             グループ作成
                         </a>
-                        <a href="#" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
+                        <a href="/notification" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
                             <Bell className="mr-3" />
                             通知
                         </a>
-                        <a href="#" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
+                        <a href="/profile" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
                             <User className="mr-3" />
                             プロフィール
                         </a>
