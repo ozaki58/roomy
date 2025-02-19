@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchAllGroupsByUser } from "@/lib/data";
-import { sql } from "@vercel/postgres";
-import { db } from "@vercel/postgres";
-const client = await db.connect();
+import { createGroupByUser } from "@/lib/data";
 // GET リクエストを処理
 export async function GET(req: Request) {
   try {
@@ -41,15 +39,8 @@ export async function POST(req: Request) {
     // リクエストボディからJSONをパース
     const { groupName, groupDescription, groupType, createdBy } = await req.json();
 
-    // groupType が "public" なら is_public を true に変換
-    const isPublic = groupType === "public";
-
-    // groups テーブルにデータを挿入（テーブル設計に合わせてカラム名を修正してください）
-    const result = await client.sql`
-      INSERT INTO groups (name, description, is_public, created_by)
-      VALUES (${groupName}, ${groupDescription}, ${isPublic}, ${createdBy})
-      RETURNING *
-    `;
+ 
+    const result = await createGroupByUser(groupName, groupDescription, groupType, createdBy)
 
     // 作成したグループデータを返す
     return NextResponse.json({ group: result.rows[0] }, { status: 201 });

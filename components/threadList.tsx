@@ -54,14 +54,17 @@ const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
 );
 
 // ThreadList コンポーネント
-export default function ThreadList({ threads: initialThreads }: { threads: Thread[] }) {
-  const [threads, setThreads] = useState(initialThreads);
+export default function ThreadList({ threads: initialThreads = [] }: { threads?: Thread[] }) {
+  const [threads, setThreads] = useState<Thread[]>(initialThreads);
+
+  useEffect(() => {
+    setThreads(initialThreads || []);
+  }, [initialThreads]);
+
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    setThreads(initialThreads);
-  }, [initialThreads]);
+ 
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -99,7 +102,8 @@ export default function ThreadList({ threads: initialThreads }: { threads: Threa
         <div className="max-w-3xl mx-auto p-4 space-y-4">
           {threads.map((thread, index) => (
             <div key={thread.id || index} className="mb-0">
-              <ThreadCard thread={{ ...thread, comments: thread.comments.slice(0, 2) }} />
+              <ThreadCard thread={{ ...thread, comments: (thread.comments || []).slice(0, 2) }} />
+
               <ReplyBanner
                 commentCount={thread.commentCount}
                 onReplyClick={() => handleReplyClick(thread)}

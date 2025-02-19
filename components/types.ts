@@ -1,5 +1,6 @@
 // src/types.ts
 export interface Comment {
+    id:number;  
     author: string;
     content: string;
     date: string;
@@ -7,6 +8,7 @@ export interface Comment {
   
   export interface Thread {
     id:number;
+    group_id: number;
     author: string;
     date: string;
     content: string;
