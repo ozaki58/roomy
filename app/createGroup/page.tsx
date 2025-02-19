@@ -1,22 +1,55 @@
 "use client";
-import React, { useState } from 'react'
-import { PlusCircleIcon } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Textarea } from "@/components/ui/textarea"
-
+import React, { useState } from 'react';
+import { PlusCircleIcon } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
 export default function CreateGroupPage() {
-  const [groupName, setGroupName] = useState('')
-  const [groupDescription, setGroupDescription] = useState('')
-  const [groupType, setGroupType] = useState('public')
+  const [groupName, setGroupName] = useState('');
+  const [groupDescription, setGroupDescription] = useState('');
+  const [groupType, setGroupType] = useState('public');
+  const [message, setMessage] = useState<string | null>(null);
+  const router = useRouter();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would typically send the group data to your backend
-    console.log({ groupName, groupDescription, groupType })
-  }
+    // 実際は認証済みのユーザーIDを利用しますが、ここでは仮のIDを使用
+    const createdBy = "693ee2a0-35c5-43f7-8a49-8f92070ff844"
+
+    const payload = {
+      groupName,
+      groupDescription,
+      groupType,
+      createdBy,
+    };
+
+    try {
+      const response = await fetch('/api/groups', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Group created:', data);
+        router.push(`/group/${data.group.id}`);
+        setMessage('グループが作成されました！');
+      } else {
+        const errorData = await response.json();
+        console.error('Error creating group:', errorData);
+        setMessage('グループの作成に失敗しました。');
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      setMessage('グループの作成に失敗しました。');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
@@ -60,7 +93,8 @@ export default function CreateGroupPage() {
             <PlusCircleIcon className="mr-2 h-4 w-4" /> グループを作成
           </Button>
         </form>
+        {message && <p className="mt-4 text-center">{message}</p>}
       </div>
     </div>
-  )
+  );
 }
