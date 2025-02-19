@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     const result = await createGroupByUser(groupName, groupDescription, groupType, createdBy)
 
     // 作成したグループデータを返す
-    return NextResponse.json({ group: result.rows[0] }, { status: 201 });
+    return NextResponse.json({ group: result }, { status: 201 });
   } catch (error) {
     console.error("Error creating group:", error);
     return NextResponse.json({ error: "Group creation failed" }, { status: 500 });

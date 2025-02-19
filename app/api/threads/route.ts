@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   try {
     const { groupId, title, content, createdBy } = await req.json();
     const result = await createThread(groupId, title, content, createdBy);
-    return NextResponse.json(result.rows[0], { status: 201 });
+    return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error("Error creating thread:", error);
     return NextResponse.json({ error: "Thread creation failed" }, { status: 500 });
@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     }
 
     const data = await fetchThreadsByGroup(groupId);
-    return NextResponse.json({ threads: data.rows }, { status: 200 });
+    return NextResponse.json({ threads: data }, { status: 200 });
   } catch (error) {
     console.error("Error fetching threads:", error);
     return NextResponse.json({ error: "Failed to fetch threads" }, { status: 500 });

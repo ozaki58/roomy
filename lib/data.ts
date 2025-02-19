@@ -1,4 +1,7 @@
-import { sql } from '@vercel/postgres';
+import postgres from 'postgres';
+ 
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+
 import {
     User,
     Group,
@@ -7,15 +10,13 @@ import {
     User_Group,
 
 } from './definitions';
-import { db } from "@vercel/postgres";
-const client = await db.connect();
 
 //publicかどうかで条件分岐
 export async function fetchAllGroupsByUser(userId: string, isPublic: boolean) {
   try {
     console.log("Running query with:", { userId, isPublic });
    
-    const data = await client.sql`
+    const data = await sql`
       SELECT 
         g.id ,
         g.name,
@@ -27,8 +28,8 @@ export async function fetchAllGroupsByUser(userId: string, isPublic: boolean) {
       JOIN user_groups ug ON g.id = ug.group_id
       WHERE ug.user_id = ${userId} AND g.is_public = ${isPublic}
     `;
-    console.log("Query result:", data.rows);
-    return data.rows;
+    console.log("Query result:", data);
+    return data;
   } catch (error) {
     console.error("Database query error:", error);
     throw error;
@@ -40,7 +41,7 @@ export async function fetchAllGroupsByUser(userId: string, isPublic: boolean) {
          // groupType が "public" なら is_public を true に変換
     const isPublic = groupType === "public";
     // groups テーブルにデータを挿入（テーブル設計に合わせてカラム名を修正してください）
-    const result = await client.sql`
+    const result = await sql`
     INSERT INTO groups (name, description, is_public, created_by)
     VALUES (${groupName}, ${groupDescription}, ${isPublic}, ${createdBy})
     RETURNING *
@@ -60,7 +61,7 @@ export async function createThread(
   content: string,
   createdBy: string
 ) {
-  const result = await client.sql`
+  const result = await sql`
     INSERT INTO threads (group_id, title, content, created_by)
     VALUES (${groupId}, ${title}, ${content}, ${createdBy})
     RETURNING *
@@ -70,7 +71,7 @@ export async function createThread(
 
 // グループIDに基づいてスレッド一覧を取得する関数
 export async function fetchThreadsByGroup(groupId: string) {
-  const result = await client.sql`
+  const result = await sql`
     SELECT
       t.id,
       t.group_id,
