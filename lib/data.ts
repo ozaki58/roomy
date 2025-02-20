@@ -62,14 +62,13 @@ export async function createThread(
   createdBy: string
 ) {
   const result = await sql`
-    INSERT INTO threads (group_id, title, content, created_by)
+    INSERT INTO threads (group_id, title, content, user_id)
     VALUES (${groupId}, ${title}, ${content}, ${createdBy})
     RETURNING *
   `;
   return result;
 }
 
-// グループIDに基づいてスレッド一覧を取得する関数
 export async function fetchThreadsByGroup(groupId: string) {
   const result = await sql`
     SELECT
@@ -79,12 +78,40 @@ export async function fetchThreadsByGroup(groupId: string) {
       t.title,
       t.content,
       t.created_at,
-      u.username AS author
+      u.username AS author,
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'id', c.id,
+            'thread_id', c.thread_id,
+            'user_id', c.user_id,
+            'content', c.content,
+            'created_at', c.created_at,
+            'author', cu.username
+          )
+        ) FILTER (WHERE c.id IS NOT NULL),
+        '[]'
+      ) AS comments
     FROM threads t
     LEFT JOIN users u ON t.user_id = u.id
+    LEFT JOIN comments c ON t.id = c.thread_id
+    LEFT JOIN users cu ON c.user_id = cu.id
     WHERE t.group_id = ${groupId}
+    GROUP BY t.id, t.group_id, t.user_id, t.title, t.content, t.created_at, u.username
     ORDER BY t.created_at DESC
   `;
   return result;
- 
+}
+
+
+// コメント一覧を取得する関数
+export async function fetchCommentsByGroup(threadId: string) {
+  const result = await sql`
+    SELECT
+      *
+    FROM threads 
+    WHERE thread_id = ${threadId}
+    ORDER BY t.created_at DESC
+  `;
+  return result;
 }
