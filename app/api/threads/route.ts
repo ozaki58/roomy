@@ -1,12 +1,12 @@
 // app/api/threads/route.ts
 import { NextResponse } from "next/server";
-import { createThread, fetchThreadsByGroup } from "@/lib/data";
+import { createThread, fetchCommentsByGroup, fetchThreadsByGroup } from "@/lib/data";
 
 // POST: スレッド作成エンドポイント
 export async function POST(req: Request) {
   try {
-    const { groupId, title, content, createdBy } = await req.json();
-    const result = await createThread(groupId, title, content, createdBy);
+    const { groupId, content, createdBy } = await req.json();
+    const result = await createThread(groupId, content, createdBy);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error("Error creating thread:", error);
@@ -31,3 +31,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Failed to fetch threads" }, { status: 500 });
   }
 }
+// app/api/threads/[id]/route.ts
+
+
+
+

@@ -13,7 +13,7 @@ const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
         <div className="flex items-center space-x-3">
           <Avatar>
             <AvatarImage src="/placeholder.svg" />
-            <AvatarFallback>{thread.author[0]}</AvatarFallback>
+            <AvatarFallback>{thread.author}</AvatarFallback>
           </Avatar>
           <div>
             <div className="font-semibold">{thread.author}</div>
@@ -37,7 +37,7 @@ const ThreadCard: React.FC<{ thread: Thread }> = ({ thread }) => (
           <div key={index} className="flex items-start space-x-3">
             <Avatar className="w-8 h-8">
               <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback>{comment.author[0]}</AvatarFallback>
+              <AvatarFallback>{comment.author}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <div className="bg-gray-100 rounded-lg p-2">
@@ -76,25 +76,29 @@ export default function ThreadList({ threads: initialThreads = [] }: { threads?:
     setIsModalOpen(true);
   };
 
-  const addComment = (newComment: Comment) => {
-    if (selectedThread) {
-      const updatedThreads = threads.map((thread) =>
-        thread.id === selectedThread.id
-          ? {
-              ...thread,
-              comments: [...thread.comments, newComment],
-              commentCount: thread.commentCount + 1,
-            }
-          : thread
+  const addComment = async (newComment: Comment) => {
+    if (!selectedThread) return;
+    try {
+      // コメント投稿が成功した後、対象スレッドの最新状態を取得する
+      const response = await fetch(`/api/threads/${selectedThread.id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch updated thread");
+      }
+      const data = await response.json();
+      const updatedThread: Thread = data.thread;
+  
+      // 選択中のスレッドと一覧の中の該当スレッドを更新
+      setSelectedThread(updatedThread);
+      setThreads(prevThreads =>
+        prevThreads.map(thread =>
+          thread.id === updatedThread.id ? updatedThread : thread
+        )
       );
-      setThreads(updatedThreads);
-      setSelectedThread({
-        ...selectedThread,
-        comments: [...selectedThread.comments, newComment],
-        commentCount: selectedThread.commentCount + 1,
-      });
+    } catch (error) {
+      console.error("Error re-fetching thread:", error);
     }
   };
+  
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -118,7 +122,7 @@ export default function ThreadList({ threads: initialThreads = [] }: { threads?:
           <div>
             <h2 className="text-xl font-semibold mb-4">返信スレッド</h2>
             <ThreadCard thread={selectedThread} />
-            <TextareaForm addComment={addComment} />
+            <TextareaForm addComment={addComment} threadId={selectedThread.id}/>
           </div>
         )}
       </Modal>
