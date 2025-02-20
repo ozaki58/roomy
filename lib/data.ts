@@ -164,3 +164,13 @@ export async function fetchThreadById(threadId: string) {
 `;
   return result;
 }
+
+export async function fetchAllPublicGroups() {
+  const result = await sql`
+    SELECT * FROM groups
+    WHERE is_public = TRUE
+    ORDER BY created_at DESC
+
+  `;
+  return result;
+}

@@ -1,48 +1,42 @@
 import { NextResponse } from "next/server";
-import { fetchAllGroupsByUser } from "@/lib/data";
-import { createGroupByUser } from "@/lib/data";
-// GET リクエストを処理
+import { fetchAllGroupsByUser, fetchAllPublicGroups, createGroupByUser } from "@/lib/data";
+
 export async function GET(req: Request) {
   try {
-    // クエリパラメータを取得
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
     const isPublic = searchParams.get("isPublic");
+    const userId = searchParams.get("userId");
 
-    // クエリパラメータの確認
-    if (!userId || isPublic === null) {
-      return NextResponse.json(
-        { error: "Missing userId or isPublic parameter." },
-        { status: 400 }
-      );
+  
+
+    let groups;
+    if (userId) {
+      // ユーザーに紐づくグループ（公開・非公開）の取得
+      groups = await fetchAllGroupsByUser(userId, isPublic === "true");
+    } else {
+      // userId がない場合は、公開グループのみを返す
+      if (isPublic === "true") {
+        groups = await fetchAllPublicGroups();
+      } else {
+        // userId が指定されていない状態で非公開グループを要求された場合はエラーにする
+        return NextResponse.json(
+          { error: "UserId is required for non-public groups." },
+          { status: 400 }
+        );
+      }
     }
 
-    // データを取得
-    const groups = await fetchAllGroupsByUser(userId, isPublic === "true");
-
-    // データを返す
     return NextResponse.json(groups, { status: 200 });
   } catch (error) {
     console.error("Error fetching groups:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
-
-
-// POST メソッドでグループ作成を処理する
 export async function POST(req: Request) {
   try {
-    // リクエストボディからJSONをパース
     const { groupName, groupDescription, groupType, createdBy } = await req.json();
-
- 
-    const result = await createGroupByUser(groupName, groupDescription, groupType, createdBy)
-
-    // 作成したグループデータを返す
+    const result = await createGroupByUser(groupName, groupDescription, groupType, createdBy);
     return NextResponse.json({ group: result }, { status: 201 });
   } catch (error) {
     console.error("Error creating group:", error);

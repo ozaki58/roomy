@@ -1,22 +1,40 @@
 "use client";
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, Users } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Search, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import groupData from "@/data/publicGroup.json";
+import { Group } from "@/lib/definitions"; // Group型の定義
 
 export default function GroupSearchPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+  // 初期値は空の配列にする（Group[]）
+  const [groupData, setGroupData] = useState<Group[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const router = useRouter();
 
-  const filteredGroups = groupData.publicGroups.filter(group =>
+  useEffect(() => {
+    fetchPublicGroups();
+  }, []);
+
+  async function fetchPublicGroups() {
+    try {
+      const isPublic = true;
+      const response = await fetch(`/api/groups?isPublic=${isPublic}`);
+      const data = await response.json();
+      // APIのレスポンスが { groups: [...] } の場合は data.groups を使う
+      // ここではレスポンスが直接配列であると仮定しています
+      setGroupData(data);
+    } catch (error) {
+      console.error("Failed to fetch groups:", error);
+    }
+  }
+
+  const filteredGroups = groupData.filter(group =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // クリック時の処理例: 詳細ページへ遷移する
-  const handleThreadClick = (group: typeof groupData.publicGroups[0]) => {
-    // 例：/groups/[id] のルートへ遷移
+  // グループクリック時に詳細ページへ遷移する
+  const handleGroupClick = (group: Group) => {
     router.push(`/group/${group.id}`);
   };
 
@@ -37,14 +55,13 @@ export default function GroupSearchPage() {
             </div>
             <div className="space-y-2">
               {filteredGroups.map(group => (
-                // クリック可能にするために onClick と cursor-pointer クラスを追加
                 <div
                   key={group.id}
-                  onClick={() => handleThreadClick(group)}
+                  onClick={() => handleGroupClick(group)}
                   className="flex items-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
                 >
                   <img
-                    src={group.image}
+                    src={group.image || "/placeholder.svg"}
                     alt={group.name}
                     className="w-12 h-12 rounded-full mr-4"
                   />
