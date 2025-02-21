@@ -37,7 +37,7 @@ export async function POST(req: Request) {
   try {
     const { groupName, groupDescription, groupType, createdBy } = await req.json();
     const result = await createGroupByUser(groupName, groupDescription, groupType, createdBy);
-    return NextResponse.json({ group: result }, { status: 201 });
+    return NextResponse.json({ group: result[0] }, { status: 201 });
   } catch (error) {
     console.error("Error creating group:", error);
     return NextResponse.json({ error: "Group creation failed" }, { status: 500 });

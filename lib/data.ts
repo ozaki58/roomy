@@ -75,7 +75,7 @@ export async function fetchThreadsByGroup(groupId: string) {
       t.group_id,
       t.user_id,
       t.content,
-      t.created_at,
+      t.created_at As date,
       u.username AS author,
       COALESCE(
         json_agg(
@@ -172,5 +172,40 @@ export async function fetchAllPublicGroups() {
     ORDER BY created_at DESC
 
   `;
+  return result;
+}
+
+// グループに参加
+export async function joinGroup(userId: string, groupId: string) {
+  
+  const result = await sql`
+    INSERT INTO user_groups (user_id, group_id)
+    VALUES (${userId}, ${groupId})
+    RETURNING *
+  `;
+  return result;
+}
+
+export async function checkJoinGroup(userId: string, groupId: string) {
+  const result = await sql`
+    SELECT 1 
+    FROM user_groups
+    WHERE user_id = ${userId} AND group_id = ${groupId}
+  `;
+  return result.length > 0;
+}
+export async function GroupDetailById(groupId: string) {
+  const result = await sql`
+      SELECT 
+        id,
+        name,
+        description,
+        members,
+        is_public,
+        created_by
+      FROM groups
+      WHERE id = ${groupId}
+      LIMIT 1
+    `;
   return result;
 }
