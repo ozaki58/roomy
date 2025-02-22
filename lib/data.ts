@@ -209,3 +209,17 @@ export async function GroupDetailById(groupId: string) {
     `;
   return result;
 }
+
+export async function leaveGroup(userId: string, groupId: string) {
+  try {
+    const result = await sql`
+      DELETE FROM user_groups
+      WHERE user_id = ${userId} AND group_id = ${groupId}
+      RETURNING *
+    `;
+    return result;
+  } catch (error) {
+    console.error("Database query error:", error);
+    throw error;
+  }
+}
