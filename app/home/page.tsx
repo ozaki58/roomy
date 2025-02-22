@@ -22,8 +22,7 @@ export default function HomePage() {
         `/api/groups/?userId=${userId}&isPublic=${isPublic}`
       );
       const data = await response.json();
-      // API が配列そのものを返している場合はそのままセット
-      // もし { groups: [...] } の形式なら data.groups に変更してください
+      
       setGroupData(data);
     } catch (error) {
       console.error("Failed to fetch groups:", error);

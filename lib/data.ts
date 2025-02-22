@@ -223,3 +223,16 @@ export async function leaveGroup(userId: string, groupId: string) {
     throw error;
   }
 }
+export async function deleteThreadById(threadId: string) {
+  try {
+    const result = await sql`
+      DELETE FROM threads
+      WHERE id = ${threadId}
+      RETURNING *
+    `;
+    return result;
+  } catch (error) {
+    console.error("Database query error:", error);
+    throw error;
+  }
+}

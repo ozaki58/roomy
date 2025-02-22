@@ -11,6 +11,7 @@ export interface Comment {
   export interface Thread {
     id:UUID;
     group_id: UUID;
+    user_id: UUID;
     author: string;
     date: string;
     content: string;
