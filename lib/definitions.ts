@@ -1,9 +1,9 @@
 // User テーブル
 export interface User {
-    id: number; // プライマリキー
+    id: string; // プライマリキー
     username: string; // ユーザー名（ユニーク）
     email: string; // メールアドレス（ユニーク）
-    passwordHash: string; // ハッシュ化されたパスワード
+    password: string; // ハッシュ化されたパスワード
 }
 
 // Group テーブル

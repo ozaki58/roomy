@@ -103,7 +103,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThrea
           {thread.comments.map((comment, index) => (
             <div key={index} className="flex items-start space-x-3">
               <Avatar className="w-8 h-8">
-                <AvatarImage src="/placeholder.svg" />
+                <AvatarImage src={comment.image_url} />
                 <AvatarFallback>{comment.author}</AvatarFallback>
               </Avatar>
               <div className="flex-1">

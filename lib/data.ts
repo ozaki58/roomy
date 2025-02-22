@@ -137,36 +137,46 @@ export async function createCommentByUser(
 // スレッドidに紐づくコメント一覧を取得する関数
 export async function fetchThreadById(threadId: string) {
   const result = await sql`
-  SELECT
-    t.id,
-    t.group_id,
-    t.user_id,
-    t.content,
-    t.created_at,
-    u.username AS author,
-    COALESCE(
-      json_agg(
-        json_build_object(
-          'id', c.id,
-          'thread_id', c.thread_id,
-          'user_id', c.user_id,
-          'content', c.content,
-          'created_at', c.created_at,
-          'author', cu.username
-        )
-      ) FILTER (WHERE c.id IS NOT NULL),
-      '[]'
-    ) AS comments
-  FROM threads t
-  LEFT JOIN users u ON t.user_id = u.id
-  LEFT JOIN comments c ON t.id = c.thread_id
-  LEFT JOIN users cu ON c.user_id = cu.id
-  WHERE t.id = ${threadId}
-  GROUP BY t.id, t.group_id, t.user_id, t.content, t.created_at, u.username
-  LIMIT 1
-`;
+    SELECT
+      t.id,
+      t.group_id,
+      t.user_id,
+      t.content,
+      t.created_at,
+      u.username AS author,
+      u.image_url,
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'id', c.id,
+            'thread_id', c.thread_id,
+            'user_id', c.user_id,
+            'content', c.content,
+            'created_at', c.created_at,
+            'author', cu.username,
+            'image_url', cu.image_url
+          )
+        ) FILTER (WHERE c.id IS NOT NULL),
+        '[]'
+      ) AS comments
+    FROM threads t
+    LEFT JOIN users u ON t.user_id = u.id
+    LEFT JOIN comments c ON t.id = c.thread_id
+    LEFT JOIN users cu ON c.user_id = cu.id
+    WHERE t.id = ${threadId}
+    GROUP BY
+      t.id,
+      t.group_id,
+      t.user_id,
+      t.content,
+      t.created_at,
+      u.username,
+      u.image_url
+    LIMIT 1
+  `;
   return result;
 }
+
 
 export async function fetchAllPublicGroups() {
   const result = await sql`

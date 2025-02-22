@@ -6,6 +6,7 @@ export interface Comment {
     author: string;
     content: string;
     date: string;
+    image_url:string; //コメント投稿者のプロフィール
   }
   
   export interface Thread {
