@@ -12,6 +12,7 @@ export interface Comment {
     id:UUID;
     group_id: UUID;
     user_id: UUID;
+    image_url:string;
     author: string;
     date: string;
     content: string;

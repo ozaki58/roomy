@@ -75,8 +75,9 @@ export async function fetchThreadsByGroup(groupId: string) {
       t.group_id,
       t.user_id,
       t.content,
-      t.created_at As date,
+      t.created_at AS date,
       u.username AS author,
+      u.image_url,  -- ここにカンマを追加
       COALESCE(
         json_agg(
           json_build_object(
@@ -85,7 +86,8 @@ export async function fetchThreadsByGroup(groupId: string) {
             'user_id', c.user_id,
             'content', c.content,
             'created_at', c.created_at,
-            'author', cu.username
+            'author', cu.username,  -- ここにもカンマを追加
+            'image_url', cu.image_url
           )
         ) FILTER (WHERE c.id IS NOT NULL),
         '[]'
@@ -95,11 +97,12 @@ export async function fetchThreadsByGroup(groupId: string) {
     LEFT JOIN comments c ON t.id = c.thread_id
     LEFT JOIN users cu ON c.user_id = cu.id
     WHERE t.group_id = ${groupId}
-    GROUP BY t.id, t.group_id, t.user_id, t.content, t.created_at, u.username
+    GROUP BY t.id, t.group_id, t.user_id, t.content, t.created_at, u.username, u.image_url
     ORDER BY t.created_at DESC
   `;
   return result;
 }
+
 
 
 // コメント一覧を取得する関数
@@ -235,4 +238,34 @@ export async function deleteThreadById(threadId: string) {
     console.error("Database query error:", error);
     throw error;
   }
+}
+
+export async function updateUserProfile(userId: string,username: string,bio: string,interests: string,imageUrl:string) {
+  try {
+    const result = await sql`
+    UPDATE users
+    SET username = ${username},
+        bio = ${bio},
+        interests = ${interests},
+        image_url = ${imageUrl}
+    WHERE id = ${userId}
+    RETURNING *
+  `;
+  return result;
+  }
+  catch (error) {
+    console.error("Database query error:", error);
+    throw error;
+  }
+}
+
+export async function UserDetailById(userId: string) {
+  const result = await sql`
+      SELECT 
+        *
+      FROM users
+      WHERE id = ${userId}
+      LIMIT 1
+    `;
+  return result;
 }

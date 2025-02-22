@@ -56,7 +56,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThrea
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <Avatar>
-              <AvatarImage src="/placeholder.svg" />
+              <AvatarImage src={thread.image_url} />
               <AvatarFallback>{thread.author}</AvatarFallback>
             </Avatar>
             <div>
