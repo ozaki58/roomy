@@ -1,45 +1,30 @@
-import NextAuth from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
-import bcrypt from 'bcrypt';
-import postgres from 'postgres';
-import { z } from 'zod';
-import type { User } from './lib/definitions';
-import { authConfig } from './auth.config';
+import NextAuth from "next-auth";
+import Github from "next-auth/providers/github";
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+import type { NextAuthConfig } from "next-auth";
 
-async function getUser(email: string): Promise<User | undefined> {
-  try {
-    const user = await sql<User[]>`SELECT * FROM users WHERE email=${email}`;
-    return user[0];
-  } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
-  }
-}
+export const config = {
+  theme: {
+    logo: "https://next-auth.js.org/img/logo/logo-sm.png",
+  },
+  providers: [Github({ clientId: process.env.AUTH_GITHB_ID, clientSecret: process.env.AAUTH_GITHUB_SECRET})],
+  basePath: "/api/auth",
+  callbacks: {
+    authorized({ request, auth }) {
+      try {
+        const { pathname } = request.nextUrl;
+        if (pathname === "/server-example") return !!auth; //ログインしているユーザーだけ見れるページだよ。
+        return true; //ログインしてなくても取りあえず全ページ見れるよ。
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    jwt({ token, trigger, session }) {
+      // console.log(token);
+      if (trigger === "update") token.name = session.user.name;
+      return token;
+    },
+  },
+} satisfies NextAuthConfig;
 
-export const { auth, signIn, signOut } = NextAuth({
-  ...authConfig,
-  providers: [
-    Credentials({
-      async authorize(credentials) {
-        const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
-          .safeParse(credentials);
-
-        if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data;
-
-          const user = await getUser(email);
-          if (!user) return null;
-
-          const passwordsMatch = await bcrypt.compare(password, user.password);
-          if (passwordsMatch) return user;
-        }
-
-        console.log('Invalid credentials');
-        return null;
-      },
-    }),
-  ],
-});
+export const { handlers, auth, signIn, signOut } = NextAuth(config);
