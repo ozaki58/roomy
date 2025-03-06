@@ -2,9 +2,9 @@ import { v4 as uuidv4 } from 'uuid'; // UUID生成ライブラリをインポー
 
 // User データ
 const users = [
-  { id: uuidv4(), username: "alice", email: "alice@example.com", passwordHash: "hashed_password_1" },
-  { id: uuidv4(), username: "bob", email: "bob@example.com", passwordHash: "hashed_password_2" },
-  { id: uuidv4(), username: "charlie", email: "charlie@example.com", passwordHash: "hashed_password_3" },
+  { id: uuidv4(), username: "alice", email: "alice@example.com" },
+  { id: uuidv4(), username: "bob", email: "bob@example.com"},
+  { id: uuidv4(), username: "charlie", email: "charlie@example.com"},
 ];
 
 // Group データ

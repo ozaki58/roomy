@@ -3,7 +3,7 @@ export interface User {
     id: string; // プライマリキー
     username: string; // ユーザー名（ユニーク）
     email: string; // メールアドレス（ユニーク）
-    password: string; // ハッシュ化されたパスワード
+   
 }
 
 // Group テーブル
