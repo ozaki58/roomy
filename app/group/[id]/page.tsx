@@ -104,7 +104,9 @@ export default function GroupPage() {
   const handleThreadDeleted = (deletedThreadId: string) => {
     fetchThreads();
   };
-
+  const handleCommentDeleted = (deletedCommentId: string) => {
+    fetchThreads();
+  };
   return (
     <div className="p-6">
       <div className="flex items-center space-x-4">
@@ -121,7 +123,7 @@ export default function GroupPage() {
         )}
       </div>
       <TextareaForm groupId={groupId} addThread={handleThreadCreated} userId={userId || ''}/>
-      <ThreadList threads={threads} onThreadDeleted={handleThreadDeleted} userId={userId || ''}/>
+      <ThreadList threads={threads} onThreadDeleted={handleThreadDeleted} userId={userId || ''} onCommentDeleted={handleCommentDeleted}/>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { UUID } from "crypto";
 // src/types.ts
 export interface Comment {
     id:UUID;  
+    user_id: UUID;
     author: string;
     content: string;
     date: string;

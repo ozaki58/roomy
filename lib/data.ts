@@ -249,6 +249,19 @@ export async function deleteThreadById(threadId: string) {
     throw error;
   }
 }
+export async function deleteCommentById(commentId: string) {
+  try {
+    const result = await sql`
+      DELETE FROM comments
+      WHERE id = ${commentId}
+      RETURNING *
+    `;
+    return result;
+  } catch (error) {
+    console.error("Database query error:", error);
+    throw error;
+  }
+}
 
 export async function updateUserProfile(userId: string,username: string,bio: string,interests: string,imageUrl:string) {
   try {

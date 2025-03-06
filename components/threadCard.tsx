@@ -17,6 +17,7 @@ interface ThreadCardProps {
   onCommentClick?: () => void;
   onThreadDeleted?: (threadId: string) => void; // 削除後のコールバック
   userId: string;
+  onCommentDeleted?: (commentId: string) => void; 
 }
 
 const handleEdit = (id: string) => {
@@ -36,8 +37,21 @@ const deleteThread = async (threadId: string) => {
     throw error;
   }
 };
+const deleteComment = async (commentId: string) => {
+    try {
+      const response = await fetch(`/api/comments/${commentId}`, { method: "DELETE" });
+      if (!response.ok) {
+        throw new Error("Failed to delete comment");
+      }
+      const data = await response.json();
+      return data.deletedComment;
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      throw error;
+    }
+  };
 
-const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThreadDeleted ,userId}) => {
+const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThreadDeleted ,userId ,onCommentDeleted}) => {
     const currentUserId=userId;
     const handleDeleteClick = async () => {
     try {
@@ -48,6 +62,17 @@ const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThrea
       else{console.log("koaaaaaaaaaaaaa")}
     } catch (error) {
       console.error("Error in delete handler:", error);
+    }
+  };
+
+  const handleCommentDelete = async (commentId: string) => {
+    try {
+      await deleteComment(commentId);
+      if (onCommentDeleted) {
+        onCommentDeleted(commentId);
+      }
+    } catch (error) {
+      console.error("Error in comment deletion handler:", error);
     }
   };
 
@@ -102,7 +127,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThrea
       <div className="border-t p-4">
         <div className="space-y-4">
           {thread.comments.map((comment, index) => (
-            <div key={index} className="flex items-start space-x-3">
+            <div key={index} className="flex items-start space-x-3 relative">
               <Avatar className="w-8 h-8">
                 <AvatarImage src={comment.image_url} />
                 <AvatarFallback>{comment.author}</AvatarFallback>
@@ -114,6 +139,24 @@ const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThrea
                 </div>
                 <div className="text-xs text-gray-500 mt-1">{comment.date}</div>
               </div>
+              {/* 現在のユーザーがコメント投稿者の場合のみコメント用のドロップダウンを表示 */}
+              {comment.user_id === currentUserId && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="absolute right-2 top-2">
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">Open menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {/* ここに編集機能を追加する場合は同様に実装 */}
+                    <DropdownMenuItem onClick={() => handleCommentDelete(comment.id)}>
+                      <Trash className="mr-2 h-4 w-4" />
+                      削除
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           ))}
         </div>
