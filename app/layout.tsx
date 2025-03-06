@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/sidebar"; // Sidebarをインポート
-import { Input } from "@/components/ui/input"; // Inputをインポート
-import { Menu, UserIcon } from "lucide-react"; // Menuをインポート
+
+import { Menu } from "lucide-react"; // Menuをインポート
 import Link from "next/link";
-import { Bell } from "lucide-react";
-import UserButton from "@/components/user-buton";
+
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
