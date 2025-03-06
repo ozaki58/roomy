@@ -6,30 +6,32 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { MailIcon, RefreshCwIcon, ArrowLeftIcon } from "lucide-react"
 import Link from "next/link"
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation"
 export default function EmailVerification() {
-  const [isResending, setIsResending] = useState(false)
+  // const [isResending, setIsResending] = useState(false)
   const [showChangeEmail, setShowChangeEmail] = useState(false)
   
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
-  const [emailInput, setEmailInput] = useState(email)
-  const handleResendEmail = async () => {
-    setIsResending(true)
-    // TODO: Implement resend email logic
+  // const [emailInput, setEmailInput] = useState(email)
+  // const handleResendEmail = async () => {
+  //   setIsResending(true)
+  //   // TODO: Implement resend email logic
     
-    setTimeout(() => {
-      setIsResending(false)
-    }, 2000)
-  }
+  //   setTimeout(() => {
+  //     setIsResending(false)
+  //   }, 2000)
+  // }
 
-  const handleChangeEmail = async () => {
-    // TODO: Implement change email logic
-    console.log("Change email to:", emailInput)
-    setShowChangeEmail(false)
-  }
+  // const handleChangeEmail = async () => {
+  //   // TODO: Implement change email logic
+  //   console.log("Change email to:", emailInput)
+  //   setShowChangeEmail(false)
+  // }
 
   return (
+    <Suspense fallback={<div>Loading...</div>}>
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
@@ -99,6 +101,7 @@ export default function EmailVerification() {
         </CardFooter>
       </Card>
     </div>
+    </Suspense>
   )
 }
 
