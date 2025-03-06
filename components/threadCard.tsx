@@ -10,13 +10,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash } from "lucide-react";
 
-// ここで currentUserId はグローバル認証コンテキスト等から取得する方法もありますが、例として固定値
-const currentUserId = "693ee2a0-35c5-43f7-8a49-8f92070ff844";
+
 
 interface ThreadCardProps {
   thread: Thread;
   onCommentClick?: () => void;
   onThreadDeleted?: (threadId: string) => void; // 削除後のコールバック
+  userId: string;
 }
 
 const handleEdit = (id: string) => {
@@ -37,8 +37,9 @@ const deleteThread = async (threadId: string) => {
   }
 };
 
-const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThreadDeleted }) => {
-  const handleDeleteClick = async () => {
+const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThreadDeleted ,userId}) => {
+    const currentUserId=userId;
+    const handleDeleteClick = async () => {
     try {
       await deleteThread(thread.id);
       if (onThreadDeleted) {

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, PlusCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useUserInfo } from "@/components/user-info";
 
 export default function Profile() {
   const [username, setUsername] = useState("");
@@ -16,7 +17,7 @@ export default function Profile() {
   const [avatarUrl, setAvatarUrl] = useState("/placeholder-avatar.jpg"); // 初期画像
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
-
+  const userId = useUserInfo();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,10 +35,12 @@ export default function Profile() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 仮のユーザーID（実際には認証情報などから取得）
-    const createdBy = "693ee2a0-35c5-43f7-8a49-8f92070ff844";
+
+    const createdBy = userId;
     const formData = new FormData();
-    formData.append("userId", createdBy);
+    if (createdBy) {
+      formData.append("userId", createdBy);
+    }
     formData.append("username", username);
     formData.append("bio", bio);
     formData.append("interests", interests);

@@ -31,7 +31,7 @@ export default function RootLayout({
               </Link>
               
               <Menu className="text-orange-600" />
-              <UserButton />
+              
             </header>
             {children} {/* 子コンポーネントをここに表示 */}
           </main>

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
+import { useUserInfo } from '@/components/user-info';
 export default function CreateGroupPage() {
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
@@ -17,7 +18,7 @@ export default function CreateGroupPage() {
     e.preventDefault();
 
     // 実際は認証済みのユーザーIDを利用しますが、ここでは仮のIDを使用
-    const createdBy = "693ee2a0-35c5-43f7-8a49-8f92070ff844"
+    const createdBy = useUserInfo();
 
     const payload = {
       groupName,

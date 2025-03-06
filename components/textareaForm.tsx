@@ -31,12 +31,14 @@ export function TextareaForm({
   // 例としてグループIDやスレッドIDが必要な場合はプロップスで受け取る
   groupId,
   threadId,
+  userId,
 
 }: {
   addThread?: (thread: Thread) => void;
   addComment?: (comment: Comment) => void;
   groupId?: string;
   threadId?: string;
+  userId: string;
 
 }) {
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -47,7 +49,7 @@ export function TextareaForm({
     try {
       // スレッド投稿の場合
       if (addThread) {
-        const createdBy = "693ee2a0-35c5-43f7-8a49-8f92070ff844"
+        const createdBy = userId
         const response = await fetch("/api/threads", {
           method: "POST",
           headers: {
@@ -74,7 +76,7 @@ export function TextareaForm({
 
       // コメント投稿の場合
       if (addComment) {
-        const createdBy = "693ee2a0-35c5-43f7-8a49-8f92070ff844"
+        const createdBy = userId
         const response = await fetch("/api/comments", {
           method: "POST",
           headers: {

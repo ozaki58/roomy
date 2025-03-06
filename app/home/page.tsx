@@ -4,17 +4,21 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Group } from "@/lib/definitions";
-
+import { useUserInfo } from "@/components/user-info";
 export default function HomePage() {
   const [groupData, setGroupData] = useState<Group[]>([]);
   const [activeButton, setActiveButton] = useState<string>("public");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const userID = "693ee2a0-35c5-43f7-8a49-8f92070ff844";
+  const userID = useUserInfo();
 
   useEffect(() => {
     // 初回ロード時に公開グループを取得
-    fetchGroups(userID, true);
-  }, []);
+    if (userID) {
+      fetchGroups(userID, true);
+    }
+    else console.log("userId is nooooooot")
+  }, [userID]);
+  
 
   async function fetchGroups(userId: string, isPublic: boolean) {
     try {
@@ -53,8 +57,10 @@ export default function HomePage() {
               : "text-gray-500"
           }`}
           onClick={() => {
-            fetchGroups(userID, true);
-            setActiveButton("public");
+            if (userID) {
+              fetchGroups(userID, true);
+              setActiveButton("public");
+            }
           }}
         >
           公開グループ
@@ -66,8 +72,10 @@ export default function HomePage() {
               : "text-gray-500"
           }`}
           onClick={() => {
-            fetchGroups(userID, false);
-            setActiveButton("private");
+            if (userID) {
+              fetchGroups(userID, false);
+              setActiveButton("private");
+            }
           }}
         >
           プライベートグループ

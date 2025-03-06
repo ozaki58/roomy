@@ -8,9 +8,10 @@ import { Thread, Comment } from "@/components/types";
 interface ThreadListProps {
   threads?: Thread[];
   onThreadDeleted: (deletedThreadId: string) => void;
+  userId:string;
 }
 
-export default function ThreadList({ threads: initialThreads = [], onThreadDeleted }: ThreadListProps) {
+export default function ThreadList({ threads: initialThreads = [], onThreadDeleted ,userId}: ThreadListProps) {
   const [threads, setThreads] = useState<Thread[]>(initialThreads);
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,6 +57,7 @@ export default function ThreadList({ threads: initialThreads = [], onThreadDelet
                 thread={{ ...thread, comments: (thread.comments || []).slice(0, 2) }}
                 onCommentClick={() => handleCommentClick(thread)}
                 onThreadDeleted={onThreadDeleted}
+                userId={userId}
               />
             </div>
           ))}
@@ -66,8 +68,8 @@ export default function ThreadList({ threads: initialThreads = [], onThreadDelet
         {selectedThread && (
           <div>
             <h2 className="text-xl font-semibold mb-4">返信スレッド</h2>
-            <ThreadCard thread={selectedThread} />
-            <TextareaForm addComment={addComment} threadId={selectedThread.id} />
+            <ThreadCard thread={selectedThread} userId={userId}/>
+            <TextareaForm addComment={addComment} threadId={selectedThread.id} userId={userId}/>
           </div>
         )}
       </Modal>

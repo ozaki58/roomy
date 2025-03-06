@@ -5,6 +5,8 @@ import ThreadList from "@/components/threadList";
 import { TextareaForm } from "@/components/textareaForm";
 import { Thread } from "@/components/types";
 import { Button } from "@/components/ui/button";
+import { useUserInfo } from "@/components/user-info";
+
 export default function GroupPage() {
   const params = useParams();
   const groupId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -12,6 +14,10 @@ export default function GroupPage() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [groupName, setGroupName] = useState<string>("");
   const [isMember, setIsMember] = useState<boolean>(false);
+
+  
+  const userId = useUserInfo();
+
   // グループ詳細情報の取得
   async function fetchGroupDetail() {
     try {
@@ -37,7 +43,7 @@ export default function GroupPage() {
   // membership 状態を取得する関数
   async function fetchMembershipStatus() {
     try {
-      const userId = "693ee2a0-35c5-43f7-8a49-8f92070ff844";
+      if (!userId) return;
       const response = await fetch(`/api/groups/join/?userId=${userId}&groupId=${groupId}`);
       const data = await response.json();
       // API が { isMember: true/false } を返す前提
@@ -50,7 +56,7 @@ export default function GroupPage() {
   // 参加処理
   async function handleJoinGroup() {
     try {
-      const userId = "693ee2a0-35c5-43f7-8a49-8f92070ff844";
+      if (!userId) return;
       const response = await fetch(`/api/groups/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -68,7 +74,7 @@ export default function GroupPage() {
   // 脱退処理
   async function handleLeaveGroup() {
     try {
-      const userId = "693ee2a0-35c5-43f7-8a49-8f92070ff844";
+      if (!userId) return;
       const response = await fetch(`/api/groups/leave`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -89,15 +95,13 @@ export default function GroupPage() {
       fetchThreads();
       fetchMembershipStatus();
     }
-  }, [groupId]);
+  }, [groupId, userId]);
 
-  // スレッド削除後に state を更新するコールバック
-  const handleThreadDeleted = (deletedThreadId: string) => {
+  const handleThreadCreated = (newThread: Thread) => {
     fetchThreads();
   };
 
-  // スレッド作成後に最新のスレッド一覧を再取得
-  const handleThreadCreated = (newThread: Thread) => {
+  const handleThreadDeleted = (deletedThreadId: string) => {
     fetchThreads();
   };
 
@@ -116,8 +120,8 @@ export default function GroupPage() {
           </Button>
         )}
       </div>
-      <TextareaForm groupId={groupId} addThread={handleThreadCreated} />
-      <ThreadList threads={threads} onThreadDeleted={handleThreadDeleted} />
+      <TextareaForm groupId={groupId} addThread={handleThreadCreated} userId={userId || ''}/>
+      <ThreadList threads={threads} onThreadDeleted={handleThreadDeleted} userId={userId || ''}/>
     </div>
   );
 }
