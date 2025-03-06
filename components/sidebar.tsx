@@ -1,4 +1,5 @@
 "use client"; // これを追加
+import { logout } from "@/app/logout/action";
 import { Bell, Home, Search, Settings, User, CirclePlus } from "lucide-react";
 import { useState } from "react";
 
@@ -64,6 +65,9 @@ export default function Sidebar() {
                             <Settings className="mr-3" />
                             設定
                         </a>
+                        <form action={logout}>
+                        <button type="submit">logout</button>
+                        </form>
                     </nav>
                 </aside>
             </div>

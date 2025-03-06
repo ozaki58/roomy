@@ -1,12 +1,20 @@
+import { UUID } from "crypto";
+
 // src/types.ts
 export interface Comment {
+    id:UUID;  
+    user_id: UUID;
     author: string;
     content: string;
     date: string;
+    image_url:string; //コメント投稿者のプロフィール
   }
   
   export interface Thread {
-    id:number;
+    id:UUID;
+    group_id: UUID;
+    user_id: UUID;
+    image_url:string;
     author: string;
     date: string;
     content: string;
@@ -18,7 +26,7 @@ export interface Comment {
   }
   
   export interface User {
-    id: number;
+    id: UUID;
     name: string;
     email: string;
     avatar: string;
@@ -26,7 +34,7 @@ export interface Comment {
   }
 
   export interface Group {
-    id: number;
+    id: UUID;
     name: string;
     members: User[];
    

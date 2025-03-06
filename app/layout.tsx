@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/sidebar"; // Sidebarをインポート
-import { Input } from "@/components/ui/input"; // Inputをインポート
-import { Menu, UserIcon } from "lucide-react"; // Menuをインポート
+
+import { Menu } from "lucide-react"; // Menuをインポート
 import Link from "next/link";
-import { Bell } from "lucide-react";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,6 +31,7 @@ export default function RootLayout({
               </Link>
               
               <Menu className="text-orange-600" />
+              
             </header>
             {children} {/* 子コンポーネントをここに表示 */}
           </main>
