@@ -7,13 +7,12 @@ import { Input } from "@/components/ui/input"
 import { MailIcon, RefreshCwIcon, ArrowLeftIcon } from "lucide-react"
 import Link from "next/link"
 import { Suspense } from "react";
-import { useSearchParams } from "next/navigation"
 export default function EmailVerification() {
   // const [isResending, setIsResending] = useState(false)
   const [showChangeEmail, setShowChangeEmail] = useState(false)
   
-  const searchParams = useSearchParams();
-  const email = searchParams.get('email');
+
+  const email = "yourEmail"
   // const [emailInput, setEmailInput] = useState(email)
   // const handleResendEmail = async () => {
   //   setIsResending(true)

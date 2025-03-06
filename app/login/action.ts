@@ -44,5 +44,5 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect(`/login/lookMail?email=${encodeURIComponent(data.email)}`);
+  redirect('/lookMail');
 }
