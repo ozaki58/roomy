@@ -14,11 +14,12 @@ export default function CreateGroupPage() {
   const [groupType, setGroupType] = useState('public');
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
+  const userId = useUserInfo();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 実際は認証済みのユーザーIDを利用しますが、ここでは仮のIDを使用
-    const createdBy = useUserInfo();
+   //ログインユーザー
+    const createdBy = userId
 
     const payload = {
       groupName,
