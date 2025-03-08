@@ -11,6 +11,8 @@ import {
 import { MoreHorizontal, Pencil, Trash } from "lucide-react";
 import CommentItem from "./commentItem";
 import { useThreadActions } from "@/app/hooks/useThreadActions";
+import ErrorBoundary from "./errorBoundary";
+import { CommentError } from "./error";
 
 interface ThreadCardProps {
   thread: Thread;
@@ -95,12 +97,17 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
       <div className="border-t p-4">
         <div className="space-y-4">
           {thread.comments && thread.comments.map((comment, index) => (
+            <ErrorBoundary
+            key={comment.id}
+            fallback={<CommentError comment={comment} />}
+          >
             <CommentItem 
               key={comment.id || index} 
               comment={comment} 
               userId={userId} 
               onCommentDeleted={onCommentDeleted}
             />
+            </ErrorBoundary>
           ))}
         </div>
       </div>

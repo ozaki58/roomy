@@ -4,11 +4,13 @@ import ThreadListPresentation from "./threadListPresentation";
 import { Thread } from "@/components/types";
 import { useThreadActions } from "@/app/hooks/useThreadActions";
 import { useCommentActions } from "@/app/hooks/useCommentActions";
-
+import ErrorBoundary from "./errorBoundary";
+import { ThreadLoadingError } from "./error";
+import { useThreads } from "@/app/hooks/useThreads";
 interface ThreadListContainerProps {
     threads?: Thread[];
     userId: string;
-    groupId?: string;
+    groupId: string;
   }
 
 export default function ThreadListContainer({ threads: initialThreads = [], userId, groupId }: ThreadListContainerProps) {
@@ -18,7 +20,7 @@ export default function ThreadListContainer({ threads: initialThreads = [], user
   
   const { fetchThreadById } = useThreadActions();
   const { createComment } = useCommentActions(selectedThread?.id);
-
+  const {fetchThreads} =useThreads(groupId);
   useEffect(() => {
     setThreads(initialThreads || []);
   }, [initialThreads]);
@@ -84,16 +86,18 @@ export default function ThreadListContainer({ threads: initialThreads = [], user
 
 
   return (
-    <ThreadListPresentation
-      threads={threads}
-      userId={userId}
-      selectedThread={selectedThread}
-      isModalOpen={isModalOpen}
-      onCloseModal={closeModal}
-      onCommentClick={handleCommentClick}
-      onAddComment={handleAddComment}
-      onCommentDeleted={handleCommentDeleted}
-      onThreadDeleted={handleThreadDeleted}
+    <ErrorBoundary fallback={<ThreadLoadingError onRetry={() => fetchThreads()} />}>
+     <ThreadListPresentation
+       threads={threads}
+       userId={userId}
+       selectedThread={selectedThread}
+       isModalOpen={isModalOpen}
+       onCloseModal={closeModal}
+       onCommentClick={handleCommentClick}
+       onAddComment={handleAddComment}
+       onCommentDeleted={handleCommentDeleted}
+       onThreadDeleted={handleThreadDeleted}
     />
+    </ErrorBoundary>
   );
 }
