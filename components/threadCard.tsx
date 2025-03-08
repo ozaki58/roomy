@@ -9,71 +9,42 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash } from "lucide-react";
-
-
+import CommentItem from "./commentItem";
+import { useThreadActions } from "@/app/hooks/useThreadActions";
+import ErrorBoundary from "./errorBoundary";
+import { CommentError } from "./error";
 
 interface ThreadCardProps {
   thread: Thread;
   onCommentClick?: () => void;
-  onThreadDeleted?: (threadId: string) => void; // 削除後のコールバック
   userId: string;
-  onCommentDeleted?: (commentId: string) => void; 
+  onCommentDeleted?: (commentId: string) => void;
+  onThreadDeleted?: (threadId: string) => void;
 }
 
-const handleEdit = (id: string) => {
-  console.log("Edit message:", id);
-};
-
-const deleteThread = async (threadId: string) => {
-  try {
-    const response = await fetch(`/api/threads/${threadId}`, { method: "DELETE" });
-    if (!response.ok) {
-      throw new Error("Failed to delete thread");
-    }
-    const data = await response.json();
-    return data.deletedThread;
-  } catch (error) {
-    console.error("Error deleting thread:", error);
-    throw error;
-  }
-};
-const deleteComment = async (commentId: string) => {
-    try {
-      const response = await fetch(`/api/comments/${commentId}`, { method: "DELETE" });
-      if (!response.ok) {
-        throw new Error("Failed to delete comment");
-      }
-      const data = await response.json();
-      return data.deletedComment;
-    } catch (error) {
-      console.error("Error deleting comment:", error);
-      throw error;
-    }
-  };
-
-const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThreadDeleted ,userId ,onCommentDeleted}) => {
-    const currentUserId=userId;
-    const handleDeleteClick = async () => {
+const ThreadCard: React.FC<ThreadCardProps> = ({
+  thread,
+  onCommentClick,
+  userId,
+  onCommentDeleted,
+  onThreadDeleted
+}) => {
+  const { deleteThread } = useThreadActions();
+  
+  const handleDeleteClick = async () => {
     try {
       await deleteThread(thread.id);
       if (onThreadDeleted) {
         onThreadDeleted(thread.id);
       }
-      else{console.log("koaaaaaaaaaaaaa")}
     } catch (error) {
-      console.error("Error in delete handler:", error);
+      console.error("スレッド削除エラー:", error);
     }
   };
 
-  const handleCommentDelete = async (commentId: string) => {
-    try {
-      await deleteComment(commentId);
-      if (onCommentDeleted) {
-        onCommentDeleted(commentId);
-      }
-    } catch (error) {
-      console.error("Error in comment deletion handler:", error);
-    }
+  const handleEdit = (id: string) => {
+    console.log("Edit message:", id);
+    // 編集機能の実装（今後の拡張用）
   };
 
   return (
@@ -90,8 +61,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThrea
               <div className="text-sm text-gray-500">{thread.date}</div>
             </div>
           </div>
-          {/* 現在のユーザーが投稿者の場合のみドロップダウンメニューを表示 */}
-          {thread.user_id === currentUserId && (
+          {thread.user_id === userId && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="absolute right-2 top-2">
@@ -126,38 +96,18 @@ const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThrea
       </div>
       <div className="border-t p-4">
         <div className="space-y-4">
-          {thread.comments.map((comment, index) => (
-            <div key={index} className="flex items-start space-x-3 relative">
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={comment.image_url} />
-                <AvatarFallback>{comment.author}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="bg-gray-100 rounded-lg p-2">
-                  <div className="font-semibold">{comment.author}</div>
-                  <p className="text-sm">{comment.content}</p>
-                </div>
-                <div className="text-xs text-gray-500 mt-1">{comment.date}</div>
-              </div>
-              {/* 現在のユーザーがコメント投稿者の場合のみコメント用のドロップダウンを表示 */}
-              {comment.user_id === currentUserId && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="absolute right-2 top-2">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Open menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {/* ここに編集機能を追加する場合は同様に実装 */}
-                    <DropdownMenuItem onClick={() => handleCommentDelete(comment.id)}>
-                      <Trash className="mr-2 h-4 w-4" />
-                      削除
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
+          {thread.comments && thread.comments.map((comment, index) => (
+            <ErrorBoundary
+            key={comment.id}
+            fallback={<CommentError comment={comment} />}
+          >
+            <CommentItem 
+              key={comment.id || index} 
+              comment={comment} 
+              userId={userId} 
+              onCommentDeleted={onCommentDeleted}
+            />
+            </ErrorBoundary>
           ))}
         </div>
       </div>
@@ -165,4 +115,4 @@ const ThreadCard: React.FC<ThreadCardProps> = ({ thread, onCommentClick, onThrea
   );
 };
 
-export default ThreadCard;
+export default React.memo(ThreadCard);
