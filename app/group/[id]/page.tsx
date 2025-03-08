@@ -1,13 +1,13 @@
 "use client";
 import React from "react";
 import { useParams } from "next/navigation";
-import ThreadList from "@/components/threadList";
+
 import { TextareaForm } from "@/components/textareaForm";
 import { Button } from "@/components/ui/button";
 import { useUserInfo } from "@/components/user-info";
 import { useThreads } from "@/app/hooks/useThreads";
 import { useGroup } from "@/app/hooks/useGroup";
-import ThreadListPresentation from "@/components/threadListPresentation";
+
 import ThreadListContainer from "@/components/threadListContainer";
 
 export default function GroupPage() {

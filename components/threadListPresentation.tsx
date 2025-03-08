@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import ThreadCard from "@/components/threadCard";
 import Modal from "./modal";
 import { TextareaForm } from "./textareaForm";
 import { Thread } from "@/components/types";
 
+const ThreadDetailModal = lazy(() => import('./threadDetailModal'));
 interface ThreadListPresentationProps {
     threads: Thread[];
     userId: string;
@@ -44,24 +45,18 @@ interface ThreadListPresentationProps {
         </div>
       </main>
 
-      <Modal isOpen={isModalOpen} onClose={onCloseModal} size="xl">
-        {selectedThread && (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">返信スレッド</h2>
-            <ThreadCard 
-              thread={selectedThread} 
-              userId={userId} 
-              onCommentDeleted={onCommentDeleted}
-              onThreadDeleted={onThreadDeleted}
-            />
-            <TextareaForm 
-              threadId={selectedThread.id} 
-              userId={userId}
-              onCommentSubmit={onAddComment}
-            />
-          </div>
-        )}
-      </Modal>
+      {isModalOpen && (
+        <Suspense fallback={<div className="text-center p-4">読み込み中...</div>}>
+          <ThreadDetailModal
+            thread={selectedThread}
+            userId={userId}
+            onClose={onCloseModal}
+            onCommentDeleted={onCommentDeleted}
+            onThreadDeleted={onThreadDeleted}
+            onAddComment={onAddComment}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
