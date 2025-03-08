@@ -24,9 +24,10 @@ export default function ThreadDetailModal({
 }: ThreadDetailModalProps) {
     if (!thread) return null;
 
+    // ... existing code ...
     return (
-        <Modal isOpen={true} onClose={onClose} size="xl">
-            <div>
+        <Modal isOpen={true} onClose={onClose} size="responsive">
+            <div className="w-full max-h-[80vh] overflow-y-auto px-2 sm:px-4">
                 <h2 className="text-xl font-semibold mb-4">返信スレッド</h2>
                 <ErrorBoundary
                     fallback={
@@ -50,6 +51,7 @@ export default function ThreadDetailModal({
                 </ErrorBoundary>
             </div>
                 
-    </Modal >
-  );
+        </Modal>
+    );
+
 }
