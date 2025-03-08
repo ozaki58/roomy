@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useUserInfo } from "@/components/user-info";
 import { useThreads } from "@/app/hooks/useThreads";
 import { useGroup } from "@/app/hooks/useGroup";
+import ThreadListPresentation from "@/components/threadListPresentation";
+import ThreadListContainer from "@/components/threadListContainer";
 
 export default function GroupPage() {
   const params = useParams();
@@ -53,7 +55,7 @@ export default function GroupPage() {
       )}
       
       {/* スレッド一覧 */}
-      <ThreadList 
+      <ThreadListContainer
         threads={threads} 
         userId={userId || ''} 
         groupId={groupId}
