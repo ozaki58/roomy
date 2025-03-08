@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
-import { Thread, Comment } from "@/components/types";
+import { useThreads } from "@/app/hooks/useThreads";
 
 // 入力内容のスキーマ定義
 const FormSchema = z.object({
@@ -25,22 +25,21 @@ const FormSchema = z.object({
     }),
 });
 
-export function TextareaForm({
-  addThread,
-  addComment,
-  // 例としてグループIDやスレッドIDが必要な場合はプロップスで受け取る
-  groupId,
-  threadId,
-  userId,
-
-}: {
-  addThread?: (thread: Thread) => void;
-  addComment?: (comment: Comment) => void;
-  groupId?: string;
-  threadId?: string;
+interface TextareaFormProps {
   userId: string;
+  onThreadSubmit?: (content: string) => Promise<void>;
+  threadId?: string;
+  onCommentSubmit?: (content: string) => Promise<void>;
+}
 
-}) {
+export function TextareaForm({
+  userId,
+  onThreadSubmit,
+  threadId,
+  onCommentSubmit
+}: TextareaFormProps) {
+
+  
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -48,68 +47,21 @@ export function TextareaForm({
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try {
       // スレッド投稿の場合
-      if (addThread) {
-        const createdBy = userId
-        const response = await fetch("/api/threads", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          // 必要に応じて groupId や作成者IDなども含める
-          body: JSON.stringify({
-            groupId: groupId, // ここは実際のグループIDを渡す
-            content: data.bio,
-            createdBy: createdBy
-            // 例: createdBy: 認証済みユーザーのID
-          }),
+      if (onThreadSubmit) {
+        await onThreadSubmit(data.bio);
+        toast({
+          title: "スレッドを投稿しました！",
         });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "スレッド作成に失敗しました");
-        }
-
-        const newThread = await response.json();
-        // APIから返ってきたスレッドデータを使って state を更新
-        addThread(newThread);
       }
-
       // コメント投稿の場合
-      if (addComment) {
-        const createdBy = userId
-        const response = await fetch("/api/comments", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          // 必要に応じて threadId や作成者IDなども含める
-          body: JSON.stringify({
-            threadId: threadId, // ここは対象のスレッドIDを渡す
-            content: data.bio,
-            createdBy: createdBy
-            // 例: createdBy: 認証済みユーザーのID
-          }),
+      else if (threadId && onCommentSubmit) {
+        await onCommentSubmit(data.bio);
+        toast({
+          title: "コメントを投稿しました！",
         });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "コメント作成に失敗しました");
-        }
-
-        const newComment = await response.json();
-        addComment(newComment);
       }
-
-      toast({
-        title: "投稿が完了しました！",
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">
-              {JSON.stringify(data, null, 2)}
-            </code>
-          </pre>
-        ),
-      });
+      
+      // フォームをリセット
       form.reset();
     } catch (error: any) {
       console.error("投稿エラー:", error);
