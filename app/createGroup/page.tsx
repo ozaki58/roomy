@@ -14,7 +14,7 @@ export default function CreateGroupPage() {
   const [groupType, setGroupType] = useState('public');
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
-  const userId = useUserInfo();
+  const {userId} = useUserInfo();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

@@ -13,9 +13,8 @@ import ThreadListContainer from "@/components/threadListContainer";
 export default function GroupPage() {
   const params = useParams();
   const groupId = Array.isArray(params.id) ? params.id[0] : params.id;
-  const userId = useUserInfo();
-  
-  // カスタムフックを使用
+  const { userId, userProfile, loading } = useUserInfo();
+  // カスタムフックを使用s
   const { threads, loading: threadsLoading, createThread } = useThreads(groupId);
   const { groupName, isMember, loading: groupLoading, joinGroup, leaveGroup } = useGroup(groupId, userId);
 

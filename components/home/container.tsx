@@ -12,7 +12,7 @@ export default function HomeContainer() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const userID = useUserInfo();
+  const { userId, userProfile, loading } = useUserInfo();
   const router = useRouter();
 
   // グループデータ取得関数
@@ -43,10 +43,10 @@ export default function HomeContainer() {
 
   // 初期読み込み
   useEffect(() => {
-    if (userID) {
-      fetchGroups(userID, activeTab === "public");
+    if (userId) {
+      fetchGroups(userId, activeTab === "public");
     }
-  }, [userID, activeTab, fetchGroups]);
+  }, [userId, activeTab, fetchGroups]);
 
   // 検索クエリの更新
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,10 +56,10 @@ export default function HomeContainer() {
   // タブ切り替え
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab);
-    if (userID) {
-      fetchGroups(userID, tab === "public");
+    if (userId) {
+      fetchGroups(userId, tab === "public");
     }
-  }, [userID, fetchGroups]);
+  }, [userId, fetchGroups]);
 
   // グループクリックハンドラ
   const handleGroupClick = useCallback((group: Group) => {
@@ -81,7 +81,7 @@ export default function HomeContainer() {
       onSearchChange={handleSearchChange}
       onTabChange={handleTabChange}
       onGroupClick={handleGroupClick}
-      onRetry={() => fetchGroups(userID || "", activeTab === "public")}
+      onRetry={() => fetchGroups(userId || "", activeTab === "public")}
     />
   );
 }

@@ -1,28 +1,43 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import ProfilePresentation from "./presentation";
 import { useRouter } from "next/navigation";
 import { useUserInfo } from "@/components/user-info";
 
 export default function ProfileContainer() {
-  // 状態管理
+  const { userId, userProfile, loading } = useUserInfo();
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [interests, setInterests] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [avatarUrl, setAvatarUrl] = useState("/placeholder-avatar.jpg");
   const [message, setMessage] = useState<string | null>(null);
-  
-  // 参照とカスタムフック
+
   const router = useRouter();
-  const userId = useUserInfo();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+
+  useEffect(() => {
+    if (userProfile) {
+      setUsername(userProfile.username || "");
+      setBio(userProfile.bio || "");
+      setInterests(userProfile.interests || "");
+      setAvatarUrl(userProfile.image_url || "/placeholder-avatar.jpg");
+    }
+  }, [userProfile]);
+
+
+  if (loading) {
+    return <div>読み込み中...</div>;
+  }
+  
+
 
   // ファイル選択ハンドラー
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
-      
+
       // 選択したファイルのプレビューURL作成
       const fileUrl = URL.createObjectURL(e.target.files[0]);
       setAvatarUrl(fileUrl);
@@ -64,8 +79,7 @@ export default function ProfileContainer() {
         if (data.user && data.user.image_url) {
           setAvatarUrl(data.user.image_url);
         }
-        // 必要に応じてリダイレクトなど
-        // router.push("/some-page");
+      
       } else {
         const errorData = await response.json();
         console.error("Error updating profile:", errorData);
@@ -77,15 +91,14 @@ export default function ProfileContainer() {
     }
   };
 
-  // 変更ハンドラー
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
   };
-  
+
   const handleBioChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setBio(e.target.value);
   };
-  
+
   const handleInterestsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInterests(e.target.value);
   };
