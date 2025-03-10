@@ -9,7 +9,7 @@ export interface User {
 // Group テーブル
 export interface Group {
     id: number; // プライマリキー
-    image: string;
+    image_url: string;
     name: string; // グループ名
     description: string; // グループの説明
     members: number; // グループのメンバー数

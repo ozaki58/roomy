@@ -23,7 +23,8 @@ export async function fetchAllGroupsByUser(userId: string, isPublic: boolean) {
         g.description,
         g.members,
         g.is_public,
-        g.created_by
+        g.created_by,
+        g.image_url
       FROM groups g 
       JOIN user_groups ug ON g.id = ug.group_id
       WHERE ug.user_id = ${userId} AND g.is_public = ${isPublic}
@@ -36,16 +37,17 @@ export async function fetchAllGroupsByUser(userId: string, isPublic: boolean) {
   }
 }
 
-  export async function createGroupByUser(groupName:string, groupDescription:string, groupType:string, createdBy:string){
+  export async function createGroupByUser(groupName:string, groupDescription:string, groupType:string, createdBy:string, imageUrl:string) {
     try {
-         
-    const isPublic = groupType === "public";
-    const result = await sql`
-    INSERT INTO groups (name, description, is_public, created_by)
-    VALUES (${groupName}, ${groupDescription}, ${isPublic}, ${createdBy})
-    RETURNING *
-    `;
-    return result
+      const isPublic = groupType === "public";
+      const result = await sql`
+        INSERT INTO groups (name, description, is_public, created_by,image_url)
+        VALUES (${groupName}, ${groupDescription}, ${isPublic}, ${createdBy}, ${imageUrl})
+        RETURNING *
+      `;
+      
+      await joinGroup(createdBy, result[0].id);
+      return result;
     }
     catch (error) {
       console.error("Database query error:", error); 
@@ -215,7 +217,8 @@ export async function GroupDetailById(groupId: string) {
         description,
         members,
         is_public,
-        created_by
+        created_by,
+        image_url
       FROM groups
       WHERE id = ${groupId}
       LIMIT 1

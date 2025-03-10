@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 
 export function useGroup(groupId: string, userId: string | null) {
   const [groupName, setGroupName] = useState<string>("");
+  const [group_image, setGroupImage] = useState<string>("");
   const [isMember, setIsMember] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
@@ -17,6 +18,7 @@ export function useGroup(groupId: string, userId: string | null) {
       
       const data = await response.json();
       setGroupName(data.group.name);
+      setGroupImage(data.group.image_url);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("不明なエラー"));
@@ -97,6 +99,7 @@ export function useGroup(groupId: string, userId: string | null) {
 
   return {
     groupName,
+    group_image,
     isMember,
     loading,
     error,
