@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 
 import { TextareaForm } from "@/components/textareaForm";
 import { Button } from "@/components/ui/button";
-import { useUserInfo } from "@/components/user-info";
+import { useUserInfo } from "@/app/hooks/user-info";
 import { useThreads } from "@/app/hooks/useThreads";
 import { useGroup } from "@/app/hooks/useGroup";
 

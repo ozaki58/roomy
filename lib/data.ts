@@ -78,8 +78,13 @@ export async function fetchThreadsByGroup(groupId: string) {
       t.user_id,
       t.content,
       t.created_at AS date,
-      u.username AS author,
-      u.image_url,  -- ここにカンマを追加
+      json_build_object(
+        'id', u.id,
+        'username', u.username,
+        'image_url', u.image_url,
+        'bio', u.bio,
+        'interests', u.interests
+      ) AS user,
       COALESCE(
         json_agg(
           json_build_object(
@@ -88,8 +93,13 @@ export async function fetchThreadsByGroup(groupId: string) {
             'user_id', c.user_id,
             'content', c.content,
             'created_at', c.created_at,
-            'author', cu.username,  -- ここにもカンマを追加
-            'image_url', cu.image_url
+            'user', json_build_object(
+              'id', cu.id,
+              'username', cu.username,
+              'image_url', cu.image_url,
+              'bio', cu.bio,
+              'interests', cu.interests
+            )
           )
         ) FILTER (WHERE c.id IS NOT NULL),
         '[]'
@@ -99,7 +109,7 @@ export async function fetchThreadsByGroup(groupId: string) {
     LEFT JOIN comments c ON t.id = c.thread_id
     LEFT JOIN users cu ON c.user_id = cu.id
     WHERE t.group_id = ${groupId}
-    GROUP BY t.id, t.group_id, t.user_id, t.content, t.created_at, u.username, u.image_url
+    GROUP BY t.id, t.group_id, t.user_id, t.content, t.created_at, u.id, u.username, u.image_url, u.bio, u.interests
     ORDER BY t.created_at DESC
   `;
   return result;
@@ -145,8 +155,13 @@ export async function fetchThreadById(threadId: string) {
       t.user_id,
       t.content,
       t.created_at,
-      u.username AS author,
-      u.image_url,
+      json_build_object(
+        'id', u.id,
+        'username', u.username,
+        'image_url', u.image_url,
+        'bio', u.bio,
+        'interests', u.interests
+      ) AS user,
       COALESCE(
         json_agg(
           json_build_object(
@@ -155,8 +170,13 @@ export async function fetchThreadById(threadId: string) {
             'user_id', c.user_id,
             'content', c.content,
             'created_at', c.created_at,
-            'author', cu.username,
-            'image_url', cu.image_url
+            'user', json_build_object(
+              'id', cu.id,
+              'username', cu.username,
+              'image_url', cu.image_url,
+              'bio', cu.bio,
+              'interests', cu.interests
+            )
           )
         ) FILTER (WHERE c.id IS NOT NULL),
         '[]'
@@ -172,8 +192,11 @@ export async function fetchThreadById(threadId: string) {
       t.user_id,
       t.content,
       t.created_at,
+      u.id,
       u.username,
-      u.image_url
+      u.image_url,
+      u.bio,
+      u.interests
     LIMIT 1
   `;
   return result;

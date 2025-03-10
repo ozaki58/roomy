@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Group } from "@/lib/definitions";
-import { useUserInfo } from "@/components/user-info";
+import { useUserInfo } from "@/app/hooks/user-info";
 import HomePresentation from "./presentation";
 
 export default function HomeContainer() {

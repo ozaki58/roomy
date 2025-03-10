@@ -1,15 +1,9 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CommentActions from "./commentActions";
+import { Comment } from "@/components/types";
 
-interface Comment {
-  id: string;
-  image_url: string;
-  author: string;
-  user_id: string;
-  content: string;
-  date: string;
-}
+
 
 interface CommentItemProps {
   comment: Comment;
@@ -21,17 +15,17 @@ const CommentItem = ({ comment, userId, onCommentDeleted }: CommentItemProps) =>
   return (
     <div className="flex items-start space-x-3 relative">
       <Avatar className="w-8 h-8">
-        <AvatarImage src={comment.image_url} />
-        <AvatarFallback>{comment.author}</AvatarFallback>
+        <AvatarImage src={comment.user.image_url} />
+        <AvatarFallback>{comment.user.username}</AvatarFallback>
       </Avatar>
       <div className="flex-1">
         <div className="bg-gray-100 rounded-lg p-2">
-          <div className="font-semibold">{comment.author}</div>
+          <div className="font-semibold">{comment.user.username}</div>
           <p className="text-sm">{comment.content}</p>
         </div>
-        <div className="text-xs text-gray-500 mt-1">{comment.date}</div>
+        <div className="text-xs text-gray-500 mt-1">{comment.created_at}</div>
       </div>
-      {comment.user_id === userId && (
+      {comment.user.id === userId && (
         <CommentActions 
           comment={comment} 
           onCommentDeleted={onCommentDeleted}
