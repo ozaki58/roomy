@@ -8,14 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Trash } from "lucide-react";
 import { useCommentActions } from "@/app/hooks/useCommentActions";
-
-interface Comment {
-  id: string;
-  image_url: string;
-  author: string;
-  user_id: string;
-}
-
+import { Comment } from "./types";
 interface CommentActionsProps {
   comment: Comment;
   onCommentDeleted?: (commentId: string) => void;

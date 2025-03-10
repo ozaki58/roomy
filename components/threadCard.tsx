@@ -13,11 +13,14 @@ import CommentItem from "./commentItem";
 import { useThreadActions } from "@/app/hooks/useThreadActions";
 import ErrorBoundary from "./errorBoundary";
 import { CommentError } from "./error";
+import { UserProfileButton } from "./user-profile-modal";
+import { login } from "@/app/login/action";
 
 interface ThreadCardProps {
   thread: Thread;
   onCommentClick?: () => void;
   userId: string;
+  login_userName?: string;
   onCommentDeleted?: (commentId: string) => void;
   onThreadDeleted?: (threadId: string) => void;
 }
@@ -26,6 +29,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   thread,
   onCommentClick,
   userId,
+  login_userName,
   onCommentDeleted,
   onThreadDeleted
 }) => {
@@ -52,16 +56,13 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <Avatar>
-              <AvatarImage src={thread.image_url} />
-              <AvatarFallback>{thread.author}</AvatarFallback>
-            </Avatar>
+            <UserProfileButton threadOrComment_user={thread.user} login_user={userId} login_username={login_userName} />
             <div>
-              <div className="font-semibold">{thread.author}</div>
+              <div className="font-semibold">{thread.user.username}</div>
               <div className="text-sm text-gray-500">{thread.date}</div>
             </div>
           </div>
-          {thread.user_id === userId && (
+          {thread.user.id === userId && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="absolute right-2 top-2">
@@ -93,6 +94,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
           </button>
           <button>共有する {thread.shareCount}</button>
         </div>
+        
       </div>
       <div className="border-t p-4">
         <div className="space-y-4">
@@ -105,6 +107,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
               key={comment.id || index} 
               comment={comment} 
               userId={userId} 
+              login_userName={login_userName}
               onCommentDeleted={onCommentDeleted}
             />
             </ErrorBoundary>

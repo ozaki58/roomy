@@ -23,7 +23,8 @@ export async function fetchAllGroupsByUser(userId: string, isPublic: boolean) {
         g.description,
         g.members,
         g.is_public,
-        g.created_by
+        g.created_by,
+        g.image_url
       FROM groups g 
       JOIN user_groups ug ON g.id = ug.group_id
       WHERE ug.user_id = ${userId} AND g.is_public = ${isPublic}
@@ -36,16 +37,17 @@ export async function fetchAllGroupsByUser(userId: string, isPublic: boolean) {
   }
 }
 
-  export async function createGroupByUser(groupName:string, groupDescription:string, groupType:string, createdBy:string){
+  export async function createGroupByUser(groupName:string, groupDescription:string, groupType:string, createdBy:string, imageUrl:string) {
     try {
-         
-    const isPublic = groupType === "public";
-    const result = await sql`
-    INSERT INTO groups (name, description, is_public, created_by)
-    VALUES (${groupName}, ${groupDescription}, ${isPublic}, ${createdBy})
-    RETURNING *
-    `;
-    return result
+      const isPublic = groupType === "public";
+      const result = await sql`
+        INSERT INTO groups (name, description, is_public, created_by,image_url)
+        VALUES (${groupName}, ${groupDescription}, ${isPublic}, ${createdBy}, ${imageUrl})
+        RETURNING *
+      `;
+      
+      await joinGroup(createdBy, result[0].id);
+      return result;
     }
     catch (error) {
       console.error("Database query error:", error); 
@@ -76,8 +78,13 @@ export async function fetchThreadsByGroup(groupId: string) {
       t.user_id,
       t.content,
       t.created_at AS date,
-      u.username AS author,
-      u.image_url,  -- ここにカンマを追加
+      json_build_object(
+        'id', u.id,
+        'username', u.username,
+        'image_url', u.image_url,
+        'bio', u.bio,
+        'interests', u.interests
+      ) AS user,
       COALESCE(
         json_agg(
           json_build_object(
@@ -86,8 +93,13 @@ export async function fetchThreadsByGroup(groupId: string) {
             'user_id', c.user_id,
             'content', c.content,
             'created_at', c.created_at,
-            'author', cu.username,  -- ここにもカンマを追加
-            'image_url', cu.image_url
+            'user', json_build_object(
+              'id', cu.id,
+              'username', cu.username,
+              'image_url', cu.image_url,
+              'bio', cu.bio,
+              'interests', cu.interests
+            )
           )
         ) FILTER (WHERE c.id IS NOT NULL),
         '[]'
@@ -97,7 +109,7 @@ export async function fetchThreadsByGroup(groupId: string) {
     LEFT JOIN comments c ON t.id = c.thread_id
     LEFT JOIN users cu ON c.user_id = cu.id
     WHERE t.group_id = ${groupId}
-    GROUP BY t.id, t.group_id, t.user_id, t.content, t.created_at, u.username, u.image_url
+    GROUP BY t.id, t.group_id, t.user_id, t.content, t.created_at, u.id, u.username, u.image_url, u.bio, u.interests
     ORDER BY t.created_at DESC
   `;
   return result;
@@ -143,8 +155,13 @@ export async function fetchThreadById(threadId: string) {
       t.user_id,
       t.content,
       t.created_at,
-      u.username AS author,
-      u.image_url,
+      json_build_object(
+        'id', u.id,
+        'username', u.username,
+        'image_url', u.image_url,
+        'bio', u.bio,
+        'interests', u.interests
+      ) AS user,
       COALESCE(
         json_agg(
           json_build_object(
@@ -153,8 +170,13 @@ export async function fetchThreadById(threadId: string) {
             'user_id', c.user_id,
             'content', c.content,
             'created_at', c.created_at,
-            'author', cu.username,
-            'image_url', cu.image_url
+            'user', json_build_object(
+              'id', cu.id,
+              'username', cu.username,
+              'image_url', cu.image_url,
+              'bio', cu.bio,
+              'interests', cu.interests
+            )
           )
         ) FILTER (WHERE c.id IS NOT NULL),
         '[]'
@@ -170,8 +192,11 @@ export async function fetchThreadById(threadId: string) {
       t.user_id,
       t.content,
       t.created_at,
+      u.id,
       u.username,
-      u.image_url
+      u.image_url,
+      u.bio,
+      u.interests
     LIMIT 1
   `;
   return result;
@@ -215,7 +240,8 @@ export async function GroupDetailById(groupId: string) {
         description,
         members,
         is_public,
-        created_by
+        created_by,
+        image_url
       FROM groups
       WHERE id = ${groupId}
       LIMIT 1
@@ -290,5 +316,64 @@ export async function UserDetailById(userId: string) {
       WHERE id = ${userId}
       LIMIT 1
     `;
+  return result;
+}
+
+
+
+
+
+// 既存のDMグループを検索する関数
+export async function findDirectMessageGroup(userId: string, targetUserId: string) {
+  const result = await sql`
+    WITH direct_message_groups AS (
+      SELECT g.*
+      FROM groups g
+      JOIN user_groups ug1 ON g.id = ug1.group_id AND ug1.user_id = ${userId}
+      JOIN user_groups ug2 ON g.id = ug2.group_id AND ug2.user_id = ${targetUserId}
+      WHERE g.is_direct_message = true
+      AND g.members = 2
+    )
+    SELECT * FROM direct_message_groups
+  `;
+  
+  return result;
+}
+
+// DMグループを新規作成する関数
+export async function createDirectMessageGroup(userId: string, userName: string, targetUserId: string,targetUserName: string) {
+  
+  
+  
+  const groupName = `${userName} と ${targetUserName}`;
+  
+  // トランザクションを使用して、グループとユーザーグループ関連を同時に作成
+  const result = await sql.begin(async (sql) => {
+    // グループを作成
+    const groupResult = await sql`
+      INSERT INTO groups (
+        name, description, is_public, is_direct_message, 
+        created_by, members
+      )
+      VALUES (
+        ${groupName}, 'プライベートメッセージ', false, true,
+        ${userId}, 2
+      )
+      RETURNING *
+    `;
+    
+    const groupId = groupResult[0].id;
+    
+    // ユーザーグループの関連付けを作成
+    await sql`
+      INSERT INTO user_groups (user_id, group_id)
+      VALUES 
+        (${userId}, ${groupId}),
+        (${targetUserId}, ${groupId})
+    `;
+    
+    return groupResult;
+  });
+  
   return result;
 }

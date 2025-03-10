@@ -69,7 +69,7 @@ export default function ProfilePresentation({
               id="username"
               value={username}
               onChange={onUsernameChange}
-              placeholder="ユーザー名を入力"
+              placeholder={username}
               required
             />
           </div>
@@ -79,7 +79,7 @@ export default function ProfilePresentation({
               id="bio"
               value={bio}
               onChange={onBioChange}
-              placeholder="自己紹介を入力"
+              placeholder={bio}
               rows={4}
             />
           </div>
@@ -89,7 +89,7 @@ export default function ProfilePresentation({
               id="interests"
               value={interests}
               onChange={onInterestsChange}
-              placeholder="例: アクション、RPG、戦略"
+              placeholder={interests}
             />
           </div>
           <Button type="submit" className="w-full">

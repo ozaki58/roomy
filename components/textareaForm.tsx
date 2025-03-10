@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
-import { useThreads } from "@/app/hooks/useThreads";
+
 
 // 入力内容のスキーマ定義
 const FormSchema = z.object({

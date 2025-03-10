@@ -36,7 +36,7 @@ export default function GroupList({
             className="flex items-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
           >
             <img
-              src={group.image || "/placeholder.svg"}
+              src={group.image_url || "/placeholder.svg"}
               alt={group.name}
               className="w-12 h-12 rounded-full mr-4"
             />
@@ -64,7 +64,7 @@ export default function GroupList({
           className="flex items-center p-4 bg-white rounded-lg shadow cursor-pointer hover:bg-gray-50"
         >
           <img
-            src={group.image || "/placeholder.svg"}
+            src={group.image_url || "/placeholder.svg"}
             alt={group.name}
             className="w-20 h-20 rounded mr-6"
           />

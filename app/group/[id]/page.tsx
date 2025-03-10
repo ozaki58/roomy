@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 
 import { TextareaForm } from "@/components/textareaForm";
 import { Button } from "@/components/ui/button";
-import { useUserInfo } from "@/components/user-info";
+import { useUserInfo } from "@/app/hooks/user-info";
 import { useThreads } from "@/app/hooks/useThreads";
 import { useGroup } from "@/app/hooks/useGroup";
 
@@ -13,9 +13,8 @@ import ThreadListContainer from "@/components/threadListContainer";
 export default function GroupPage() {
   const params = useParams();
   const groupId = Array.isArray(params.id) ? params.id[0] : params.id;
-  const userId = useUserInfo();
-  
-  // カスタムフックを使用
+  const { userId, userProfile, loading } = useUserInfo();
+  // カスタムフックを使用s
   const { threads, loading: threadsLoading, createThread } = useThreads(groupId);
   const { groupName, isMember, loading: groupLoading, joinGroup, leaveGroup } = useGroup(groupId, userId);
 
@@ -57,7 +56,8 @@ export default function GroupPage() {
       {/* スレッド一覧 */}
       <ThreadListContainer
         threads={threads} 
-        userId={userId || ''} 
+        userId={userId || '未指定'} 
+        login_userName={userProfile?.username || '未指定'}
         groupId={groupId}
       />
     </div>
