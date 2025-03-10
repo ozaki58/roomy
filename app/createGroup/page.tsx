@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
-import { useUserInfo } from '@/components/user-info';
+import { useUserInfo } from '@/app/hooks/user-info';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, PlusCircleIcon } from "lucide-react";
 
@@ -90,7 +90,7 @@ export default function CreateGroupPage() {
           <div className="relative">
             <Avatar className="w-24 h-24">
               <AvatarImage src={groupUrl} alt="グループ画像" />
-              <AvatarFallback>ユーザー</AvatarFallback>
+              <AvatarFallback>グループ画像</AvatarFallback>
             </Avatar>
             <Button
               onClick={onCameraClick}

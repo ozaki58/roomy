@@ -16,8 +16,8 @@ export async function POST(req: Request) {
     const bio = formData.get("bio") as string;
     const interests = formData.get("interests") as string;
     const imageFile = formData.get("image") as File | null;
+    let imageUrl = formData.get("imageUrl") as string | null;
 
-    let imageUrl: string | null = null;
     if (imageFile && imageFile.name) {
       // ファイル名のサニタイズと一意な名前の生成
       const sanitizedFileName = imageFile.name.replace(/\s+/g, "-");
@@ -41,6 +41,9 @@ export async function POST(req: Request) {
         .getPublicUrl(fileName);
       
       imageUrl = publicData.publicUrl;
+    }
+    else if (imageUrl) {
+      imageUrl = imageUrl;
     }
 
 

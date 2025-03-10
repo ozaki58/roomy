@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import ProfilePresentation from "./presentation";
 import { useRouter } from "next/navigation";
-import { useUserInfo } from "@/components/user-info";
+import { useUserInfo } from "@/app/hooks/user-info";
 
 export default function ProfileContainer() {
   const { userId, userProfile, loading } = useUserInfo();
@@ -66,6 +66,7 @@ export default function ProfileContainer() {
     if (selectedFile) {
       formData.append("image", selectedFile);
     }
+    formData.append("imageUrl", avatarUrl);
 
     try {
       const response = await fetch("/api/profile", {
