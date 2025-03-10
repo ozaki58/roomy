@@ -318,3 +318,62 @@ export async function UserDetailById(userId: string) {
     `;
   return result;
 }
+
+
+
+
+
+// 既存のDMグループを検索する関数
+export async function findDirectMessageGroup(userId: string, targetUserId: string) {
+  const result = await sql`
+    WITH direct_message_groups AS (
+      SELECT g.*
+      FROM groups g
+      JOIN user_groups ug1 ON g.id = ug1.group_id AND ug1.user_id = ${userId}
+      JOIN user_groups ug2 ON g.id = ug2.group_id AND ug2.user_id = ${targetUserId}
+      WHERE g.is_direct_message = true
+      AND g.members = 2
+    )
+    SELECT * FROM direct_message_groups
+  `;
+  
+  return result;
+}
+
+// DMグループを新規作成する関数
+export async function createDirectMessageGroup(userId: string, userName: string, targetUserId: string,targetUserName: string) {
+  
+  
+  
+  const groupName = `${userName} と ${targetUserName}`;
+  
+  // トランザクションを使用して、グループとユーザーグループ関連を同時に作成
+  const result = await sql.begin(async (sql) => {
+    // グループを作成
+    const groupResult = await sql`
+      INSERT INTO groups (
+        name, description, is_public, is_direct_message, 
+        created_by, members
+      )
+      VALUES (
+        ${groupName}, 'プライベートメッセージ', false, true,
+        ${userId}, 2
+      )
+      RETURNING *
+    `;
+    
+    const groupId = groupResult[0].id;
+    
+    // ユーザーグループの関連付けを作成
+    await sql`
+      INSERT INTO user_groups (user_id, group_id)
+      VALUES 
+        (${userId}, ${groupId}),
+        (${targetUserId}, ${groupId})
+    `;
+    
+    return groupResult;
+  });
+  
+  return result;
+}

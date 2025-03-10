@@ -2,35 +2,83 @@
 
 import { useState } from "react"
 import { MessageSquare, X} from "lucide-react"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
+import { useToast } from "@/components/ui/use-toast"
 
 import {UserProfile } from "./types"
-
+import { useUserInfo } from "../app/hooks/user-info"
 
 interface UserProfileButtonProps {
-  thread_user: UserProfile;
+  threadOrComment_user: UserProfile;
   login_user: string;
+  login_username?: string;
 }
 
-
-export const UserProfileButton: React.FC<UserProfileButtonProps> = ({ thread_user, login_user }) => {
-   
+export const UserProfileButton: React.FC<UserProfileButtonProps> = ({ threadOrComment_user, login_user,login_username }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const { toast } = useToast()
+  
+
+  
+  // プライベートメッセージを開始する関数
+  const startPrivateMessage = async () => {
+    if (threadOrComment_user.id === login_user) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: login_user,
+          userName: login_username,
+          targetUserId: threadOrComment_user.id,
+          targetUserName: threadOrComment_user.username
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || "メッセージの開始に失敗しました");
+      }
+      
+      setIsOpen(false);
+      
+      // 作成/取得したグループページに遷移
+      router.push(`/group/${data.group.id}`);
+      
+    } catch (error) {
+      console.error("メッセージ開始エラー:", error);
+      toast({
+        title: "エラー",
+        description: error instanceof Error ? error.message : "メッセージの開始に失敗しました",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
       <button
-        onClick={() => thread_user.id !== login_user && setIsOpen(true)}
+        onClick={() => threadOrComment_user.id !== login_user && setIsOpen(true)}
         className="rounded-full hover:opacity-80 transition-opacity"
-        aria-label={`${thread_user.username}のプロフィールを表示`}
+        aria-label={`${threadOrComment_user.username}のプロフィールを表示`}
       >
         <Avatar className="h-10 w-10">
-          <AvatarImage src={thread_user.image_url} alt={thread_user.username} />
-          <AvatarFallback>{thread_user.username.charAt(0)}</AvatarFallback>
+          <AvatarImage src={threadOrComment_user.image_url} alt={threadOrComment_user.username} />
+          <AvatarFallback>{threadOrComment_user.username.charAt(0)}</AvatarFallback>
         </Avatar>
       </button>
 
@@ -50,8 +98,8 @@ export const UserProfileButton: React.FC<UserProfileButtonProps> = ({ thread_use
             <div className="flex justify-center relative">
               <div className="relative">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={thread_user.image_url} alt={thread_user.username} />
-                  <AvatarFallback>{thread_user.username.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={threadOrComment_user.image_url} alt={threadOrComment_user.username} />
+                  <AvatarFallback>{threadOrComment_user.username.charAt(0)}</AvatarFallback>
                 </Avatar>
               </div>
             </div>
@@ -59,19 +107,19 @@ export const UserProfileButton: React.FC<UserProfileButtonProps> = ({ thread_use
             <div className="space-y-3">
               <div>
                 <h4 className="text-sm font-medium mb-1">ユーザー名</h4>
-                <div className="border rounded-md p-3 bg-muted/30">{thread_user.username}</div>
+                <div className="border rounded-md p-3 bg-muted/30">{threadOrComment_user.username}</div>
               </div>
 
               <div>
                 <h4 className="text-sm font-medium mb-1">自己紹介</h4>
                 <div className="border rounded-md p-3 min-h-[100px] bg-muted/30">
-                  {thread_user.bio || "自己紹介はありません"}
+                  {threadOrComment_user.bio || "自己紹介はありません"}
                 </div>
               </div>
 
               <div>
                 <h4 className="text-sm font-medium mb-1">興味のあるゲームジャンル</h4>
-                <div className="border rounded-md p-3 bg-muted/30">{thread_user.interests || "設定されていません"}</div>
+                <div className="border rounded-md p-3 bg-muted/30">{threadOrComment_user.interests || "設定されていません"}</div>
               </div>
             </div>
 
@@ -79,13 +127,11 @@ export const UserProfileButton: React.FC<UserProfileButtonProps> = ({ thread_use
 
             <Button
               className="w-full"
-              onClick={() => {
-                // ここに個人チャットを開始する処理を追加
-                setIsOpen(false)
-              }}
+              onClick={startPrivateMessage}
+              disabled={isLoading || threadOrComment_user.id === login_user}
             >
               <MessageSquare className="h-4 w-4 mr-2" />
-              メッセージを送信
+              {isLoading ? "処理中..." : "メッセージを送信"}
             </Button>
           </div>
         </DialogContent>

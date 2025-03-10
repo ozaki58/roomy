@@ -8,6 +8,7 @@ import { Button } from "@headlessui/react";
 interface ThreadDetailModalProps {
     thread: Thread | null;
     userId: string;
+    login_userName: string;
     onClose: () => void;
     onCommentDeleted: (commentId: string) => void;
     onThreadDeleted: (threadId: string) => void;
@@ -17,6 +18,7 @@ interface ThreadDetailModalProps {
 export default function ThreadDetailModal({
     thread,
     userId,
+    login_userName,
     onClose,
     onCommentDeleted,
     onThreadDeleted,

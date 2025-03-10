@@ -7,20 +7,22 @@ import { useCommentActions } from "@/app/hooks/useCommentActions";
 import ErrorBoundary from "./errorBoundary";
 import { ThreadLoadingError } from "./error";
 import { useThreads } from "@/app/hooks/useThreads";
+import { set } from "react-hook-form";
 interface ThreadListContainerProps {
     threads?: Thread[];
     userId: string;
+    login_userName: string;
     groupId: string;
   }
 
-export default function ThreadListContainer({ threads: initialThreads = [], userId, groupId }: ThreadListContainerProps) {
+export default function ThreadListContainer({ threads: initialThreads = [], userId,login_userName, groupId }: ThreadListContainerProps) {
     const [threads, setThreads] = useState<Thread[]>(initialThreads);
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const { fetchThreadById } = useThreadActions();
   const { createComment } = useCommentActions(selectedThread?.id);
-  const {fetchThreads} =useThreads(groupId);
+
   useEffect(() => {
     setThreads(initialThreads || []);
   }, [initialThreads]);
@@ -86,10 +88,11 @@ export default function ThreadListContainer({ threads: initialThreads = [], user
 
 
   return (
-    <ErrorBoundary fallback={<ThreadLoadingError onRetry={() => fetchThreads()} />}>
+  <ErrorBoundary fallback={<ThreadLoadingError onRetry={() => setThreads(initialThreads)} />}>
      <ThreadListPresentation
        threads={threads}
        userId={userId}
+       login_userName={login_userName}
        selectedThread={selectedThread}
        isModalOpen={isModalOpen}
        onCloseModal={closeModal}

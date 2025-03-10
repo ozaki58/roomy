@@ -14,11 +14,13 @@ import { useThreadActions } from "@/app/hooks/useThreadActions";
 import ErrorBoundary from "./errorBoundary";
 import { CommentError } from "./error";
 import { UserProfileButton } from "./user-profile-modal";
+import { login } from "@/app/login/action";
 
 interface ThreadCardProps {
   thread: Thread;
   onCommentClick?: () => void;
   userId: string;
+  login_userName?: string;
   onCommentDeleted?: (commentId: string) => void;
   onThreadDeleted?: (threadId: string) => void;
 }
@@ -27,6 +29,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   thread,
   onCommentClick,
   userId,
+  login_userName,
   onCommentDeleted,
   onThreadDeleted
 }) => {
@@ -53,7 +56,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <UserProfileButton thread_user={thread.user} login_user={userId}/>
+            <UserProfileButton threadOrComment_user={thread.user} login_user={userId} login_username={login_userName} />
             <div>
               <div className="font-semibold">{thread.user.username}</div>
               <div className="text-sm text-gray-500">{thread.date}</div>
@@ -104,6 +107,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
               key={comment.id || index} 
               comment={comment} 
               userId={userId} 
+              login_userName={login_userName}
               onCommentDeleted={onCommentDeleted}
             />
             </ErrorBoundary>

@@ -56,7 +56,8 @@ export default function GroupPage() {
       {/* スレッド一覧 */}
       <ThreadListContainer
         threads={threads} 
-        userId={userId || ''} 
+        userId={userId || '未指定'} 
+        login_userName={userProfile?.username || '未指定'}
         groupId={groupId}
       />
     </div>

@@ -8,6 +8,7 @@ const ThreadDetailModal = lazy(() => import('./threadDetailModal'));
 interface ThreadListPresentationProps {
     threads: Thread[];
     userId: string;
+    login_userName: string;
     selectedThread: Thread | null;
     isModalOpen: boolean;
     onCloseModal: () => void;
@@ -21,6 +22,7 @@ interface ThreadListPresentationProps {
   export default function ThreadListPresentation({
     threads,
     userId,
+    login_userName,
     selectedThread,
     isModalOpen,
     onCloseModal,
@@ -39,6 +41,7 @@ interface ThreadListPresentationProps {
               thread={{ ...thread, comments: (thread.comments || []).slice(0, 2) }}
               onCommentClick={() => onCommentClick(thread)}
               userId={userId}
+              login_userName={login_userName}
               onThreadDeleted={onThreadDeleted}
             />
           ))}
@@ -50,6 +53,7 @@ interface ThreadListPresentationProps {
           <ThreadDetailModal
             thread={selectedThread}
             userId={userId}
+            login_userName={login_userName}
             onClose={onCloseModal}
             onCommentDeleted={onCommentDeleted}
             onThreadDeleted={onThreadDeleted}
