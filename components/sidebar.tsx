@@ -1,75 +1,83 @@
-"use client"; // これを追加
+"use client";
 import { logout } from "@/app/logout/action";
-import { Bell, Home, Search, Settings, User, CirclePlus } from "lucide-react";
+import { Bell, Home, Search, Settings, User, CirclePlus, X, Menu } from "lucide-react";
 import { useState } from "react";
 
 export default function Sidebar() {
     const [showSidebar, setShowSidebar] = useState(false);
 
+    const toggleSidebar = () => setShowSidebar(!showSidebar);
+
     return (
         <>
-            {showSidebar ? (
-                <button
-                    className="flex text-4xl text-black items-center cursor-pointer fixed right-10 top-6 z-50"
-                    onClick={() => setShowSidebar(!showSidebar)}
-                >
-                    x
-                </button>
-            ) : (
-                <svg
-                    onClick={() => setShowSidebar(!showSidebar)}
-                    className="fixed z-30 flex items-center cursor-pointer right-10 top-6"
-                    fill="#FFFFFF"
-                    
-                    viewBox="0 0 100 80"
-                    width="40"
-                    height="40"
-                >
-                    <rect width="100" height="10"></rect>
-                    <rect y="30" width="100" height="10"></rect>
-                    <rect y="60" width="100" height="10"></rect>
-                </svg>
+            <button 
+                onClick={toggleSidebar}
+                className="text-white hover:bg-orange-600 p-2 rounded-full transition-colors"
+                aria-label={showSidebar ? "サイドバーを閉じる" : "サイドバーを開く"}
+            >
+                <Menu size={24} />
+            </button>
+
+            {showSidebar && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-50 z-30"
+                    onClick={toggleSidebar}
+                />
             )}
 
             <div
-                className={`fixed top-0 right-0 w-64 h-full bg-white border-l transition-transform duration-300 ease-in-out z-40 ${
+                className={`fixed top-0 right-0 w-64 h-full bg-white shadow-lg border-l transition-transform duration-300 ease-in-out z-40 ${
                     showSidebar ? "translate-x-0" : "translate-x-full"
                 }`}
             >
-                <aside className="w-64 bg-white border-r h-full">
-                    <div className="p-4">
-                        
-                    </div>
-                    <nav className="mt-8">
-                        <a href="/home" className="flex items-center px-4 py-2 text-gray-700 bg-gray-200">
-                            <Home className="mr-3" />
-                            ホーム
-                        </a>
-                        <a href="/searchGroup" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
-                            <Search className="mr-3" />
-                            探索
-                        </a>
-                        <a href="/createGroup" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
-                            <CirclePlus className="mr-3" />
-                            グループ作成
-                        </a>
-                        <a href="/notification" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
-                            <Bell className="mr-3" />
-                            通知
-                        </a>
-                        <a href="/profile" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
-                            <User className="mr-3" />
-                            プロフィール
-                        </a>
-                        <a href="#" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200">
-                            <Settings className="mr-3" />
-                            設定
-                        </a>
-                        <form action={logout}>
-                        <button type="submit">logout</button>
-                        </form>
-                    </nav>
-                </aside>
+                <div className="flex justify-between items-center p-4 border-b">
+                    <h2 className="text-xl font-bold">メニュー</h2>
+                    <button 
+                        onClick={toggleSidebar}
+                        className="p-1 rounded-full hover:bg-gray-200"
+                        aria-label="サイドバーを閉じる"
+                    >
+                        <X size={24} />
+                    </button>
+                </div>
+
+                <nav className="mt-4">
+                    <a href="/home" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                        <Home className="mr-3" size={20} />
+                        ホーム
+                    </a>
+                    <a href="/searchGroup" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                        <Search className="mr-3" size={20} />
+                        探索
+                    </a>
+                    <a href="/createGroup" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                        <CirclePlus className="mr-3" size={20} />
+                        グループ作成
+                    </a>
+                    <a href="/notification" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                        <Bell className="mr-3" size={20} />
+                        通知
+                    </a>
+                    <a href="/profile" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                        <User className="mr-3" size={20} />
+                        プロフィール
+                    </a>
+                    <a href="#" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                        <Settings className="mr-3" size={20} />
+                        設定
+                    </a>
+                </nav>
+
+                <div className="absolute bottom-0 w-full p-4 border-t">
+                    <form action={logout}>
+                        <button 
+                            type="submit"
+                            className="w-full py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                        >
+                            ログアウト
+                        </button>
+                    </form>
+                </div>
             </div>
         </>
     );
