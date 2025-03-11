@@ -19,7 +19,7 @@ const CommentItem = ({ comment, userId, onCommentDeleted ,login_userName}: Comme
       <div className="flex-1">
         <div className="bg-gray-100 rounded-lg p-2">
           <div className="font-semibold">{comment.user.username}</div>
-          <p className="text-sm">{comment.content}</p>
+          <p className="text-sm whitespace-pre-line">{comment.content}</p>
         </div>
         <div className="text-xs text-gray-500 mt-1">{comment.created_at}</div>
       </div>
@@ -29,6 +29,7 @@ const CommentItem = ({ comment, userId, onCommentDeleted ,login_userName}: Comme
           onCommentDeleted={onCommentDeleted}
         />
       )}
+  
     </div>
   );
 };

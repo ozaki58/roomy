@@ -12,14 +12,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 
-
+import  { useState } from "react";
 // 入力内容のスキーマ定義
 const FormSchema = z.object({
   bio: z
     .string()
-    .min(10, {
-      message: "投稿内容は10文字以上である必要があります。",
-    })
+
     .max(160, {
       message: "投稿内容は160文字以内である必要があります。",
     }),
@@ -38,7 +36,7 @@ export function TextareaForm({
   threadId,
   onCommentSubmit
 }: TextareaFormProps) {
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -47,6 +45,8 @@ export function TextareaForm({
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try {
       // スレッド投稿の場合
+      if (isSubmitting) return;
+      setIsSubmitting(true);
       if (onThreadSubmit) {
         await onThreadSubmit(data.bio);
         toast({
@@ -70,6 +70,8 @@ export function TextareaForm({
         description: error.message || "不明なエラー",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -83,11 +85,14 @@ export function TextareaForm({
               placeholder="ここに投稿内容を書いてください"
               className="resize-none"
               {...form.register("bio")}
+              disabled={isSubmitting}
             />
           </FormControl>
           <FormMessage />
         </FormItem>
-        <Button type="submit">投稿する</Button>
+        <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "投稿中..." : "投稿する"}
+        </Button>
       </form>
     </Form>
   );
