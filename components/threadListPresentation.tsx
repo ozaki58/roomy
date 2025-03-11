@@ -38,6 +38,7 @@ interface ThreadListPresentationProps {
           {threads.map((thread, index) => (
             <ThreadCard
               key={thread.id || index}
+              onCommentDeleted={onCommentDeleted}
               thread={{ ...thread, comments: (thread.comments || []).slice(0, 2) }}
               onCommentClick={() => onCommentClick(thread)}
               userId={userId}

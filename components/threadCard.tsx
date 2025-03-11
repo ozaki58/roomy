@@ -18,6 +18,7 @@ import { login } from "@/app/login/action";
 
 interface ThreadCardProps {
   thread: Thread;
+  isInModal?: boolean;
   onCommentClick?: () => void;
   userId: string;
   login_userName?: string;
@@ -27,6 +28,7 @@ interface ThreadCardProps {
 
 const ThreadCard: React.FC<ThreadCardProps> = ({
   thread,
+  isInModal=false,
   onCommentClick,
   userId,
   login_userName,
@@ -105,6 +107,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
           >
             <CommentItem 
               key={comment.id || index} 
+              isInModal={isInModal}
               comment={comment} 
               userId={userId} 
               login_userName={login_userName}

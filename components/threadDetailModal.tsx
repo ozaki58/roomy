@@ -44,6 +44,7 @@ export default function ThreadDetailModal({
                         userId={userId}
                         onCommentDeleted={onCommentDeleted}
                         onThreadDeleted={onThreadDeleted}
+                        isInModal={true}
                     />
                     <TextareaForm
                         threadId={thread.id}

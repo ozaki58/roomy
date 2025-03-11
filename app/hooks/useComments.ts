@@ -26,13 +26,12 @@ export function useComments(threadId: string, updateThread: (thread: Thread) => 
       if (!threadResponse.ok) throw new Error("スレッド情報の取得に失敗しました");
       
       const data = await threadResponse.json();
-      updateThread(data.thread);
       return true;
     } catch (error) {
       console.error("コメント作成エラー:", error);
       return false;
     }
-  }, [threadId, updateThread]);
+  }, [threadId]);
 
   // コメント削除
   const deleteComment = useCallback(async (commentId: string) => {
@@ -48,13 +47,12 @@ export function useComments(threadId: string, updateThread: (thread: Thread) => 
       if (!threadResponse.ok) throw new Error("スレッド情報の取得に失敗しました");
       
       const data = await threadResponse.json();
-      updateThread(data.thread);
       return true;
     } catch (error) {
       console.error("コメント削除エラー:", error);
       return false;
     }
-  }, [threadId, updateThread]);
+  }, [threadId]);
 
   return {
     createComment,
