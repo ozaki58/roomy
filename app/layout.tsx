@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/sidebar"; // Sidebarをインポート
+import Sidebar from "@/components/sidebar"; 
 
-import { Menu } from "lucide-react"; // Menuをインポート
+import { Menu } from "lucide-react"; 
 import Link from "next/link";
 
 
@@ -23,18 +23,21 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <div className="flex h-screen bg-gray-100">
-        <Sidebar />
-          <main className="flex-1 overflow-auto">
-            <header className="bg-[#FF5722] border-b p-4 flex justify-between items-center">
+       
+          <div className="flex-1 flex flex-col">
+           
+            <header className="bg-[#FF5722] border-b p-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
               <Link href="/home">
-                <h2 className="text-2xl font-bold text-white" >roomy</h2> {/* 文字色を白に変更 */}
+                <h2 className="text-2xl font-bold text-white">roomy</h2>
               </Link>
-              
-              <Menu className="text-orange-600" />
-              
+              <Sidebar />
+         
             </header>
-            {children} {/* 子コンポーネントをここに表示 */}
-          </main>
+            
+            <main className="flex-1 overflow-auto p-4">
+              {children}
+            </main>
+          </div>
         </div>
       </body>
     </html>
