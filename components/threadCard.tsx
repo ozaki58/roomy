@@ -83,7 +83,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
             </DropdownMenu>
           )}
         </div>
-        <p className="mb-4">{thread.content}</p>
+        <p className="mb-4 whitespace-pre-line">{thread.content}</p>
         <div className="flex items-center space-x-4 text-sm text-gray-500">
           <button className="flex items-center space-x-1">
             <span>{thread.reactions}</span>
