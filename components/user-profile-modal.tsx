@@ -16,10 +16,10 @@ import { useUserInfo } from "../app/hooks/user-info"
 interface UserProfileButtonProps {
   threadOrComment_user: UserProfile;
   login_user: string;
-  login_username?: string;
+ 
 }
 
-export const UserProfileButton: React.FC<UserProfileButtonProps> = ({ threadOrComment_user, login_user,login_username }) => {
+export const UserProfileButton: React.FC<UserProfileButtonProps> = ({ threadOrComment_user, login_user }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -40,7 +40,7 @@ export const UserProfileButton: React.FC<UserProfileButtonProps> = ({ threadOrCo
         },
         body: JSON.stringify({
           userId: login_user,
-          userName: login_username,
+          
           targetUserId: threadOrComment_user.id,
           targetUserName: threadOrComment_user.username
         }),

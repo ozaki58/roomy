@@ -8,7 +8,8 @@ const ThreadDetailModal = lazy(() => import('./threadDetailModal'));
 interface ThreadListPresentationProps {
     threads: Thread[];
     userId: string;
-    login_userName: string;
+    isThreadLiked: (threadId: string) => boolean;
+    isThreadFavorited: (threadId: string) => boolean;
     selectedThread: Thread | null;
     isModalOpen: boolean;
     onCloseModal: () => void;
@@ -16,20 +17,26 @@ interface ThreadListPresentationProps {
     onAddComment: (content: string) => Promise<void>;
     onCommentDeleted: ( commentId: string) => void;
     onThreadDeleted: (threadId: string ) => void;
+    onLikeToggled?: (threadId: string, isLiked: boolean) => void;
+    onFavoriteToggled?: (threadId: string, isFavorited: boolean) => void;
   }
   
   // 表示のみを担当するコンポーネント
   export default function ThreadListPresentation({
     threads,
     userId,
-    login_userName,
+
+    isThreadLiked,
+    isThreadFavorited,
     selectedThread,
     isModalOpen,
     onCloseModal,
     onCommentClick,
     onAddComment,
     onCommentDeleted,
-    onThreadDeleted
+    onThreadDeleted,
+    onLikeToggled,
+    onFavoriteToggled
   }: ThreadListPresentationProps) {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -40,10 +47,14 @@ interface ThreadListPresentationProps {
               key={thread.id || index}
               onCommentDeleted={onCommentDeleted}
               thread={{ ...thread, comments: (thread.comments || []).slice(0, 2) }}
+              isThreadLiked={isThreadLiked}
+              isThreadFavorited={isThreadFavorited}
               onCommentClick={() => onCommentClick(thread)}
               userId={userId}
-              login_userName={login_userName}
+          
               onThreadDeleted={onThreadDeleted}
+              onLikeToggled={onLikeToggled}
+              onFavoriteToggled={onFavoriteToggled}
             />
           ))}
         </div>
@@ -54,11 +65,14 @@ interface ThreadListPresentationProps {
           <ThreadDetailModal
             thread={selectedThread}
             userId={userId}
-            login_userName={login_userName}
+            isThreadLiked={isThreadLiked}
+            isThreadFavorited={isThreadFavorited}
             onClose={onCloseModal}
             onCommentDeleted={onCommentDeleted}
             onThreadDeleted={onThreadDeleted}
             onAddComment={onAddComment}
+            onLikeToggled={onLikeToggled}
+            onFavoriteToggled={onFavoriteToggled}
           />
         </Suspense>
       )}

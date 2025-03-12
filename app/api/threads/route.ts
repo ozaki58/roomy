@@ -1,11 +1,17 @@
 // app/api/threads/route.ts
 import { NextResponse } from "next/server";
 import { createThread, fetchCommentsByGroup, fetchThreadsByGroup } from "@/lib/data";
-
+import { createClient } from '@/app/utils/supabase/server';
 // POST: スレッド作成エンドポイント
 export async function POST(req: Request) {
   try {
-    const { groupId, content, createdBy } = await req.json();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
+    } 
+    const createdBy = user.id;
+    const { groupId, content } = await req.json();
     const result = await createThread(groupId, content, createdBy);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {

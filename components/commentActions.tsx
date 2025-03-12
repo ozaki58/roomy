@@ -7,7 +7,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Trash } from "lucide-react";
-import { useComments } from "@/app/hooks/useComments";
 import { Comment, Thread } from "./types";
 import { useCommentActions } from "@/app/hooks/useCommentActions";
 interface CommentActionsProps {

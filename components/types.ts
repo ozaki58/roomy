@@ -22,13 +22,15 @@ export interface Thread {
     id: string;
     group_id: string;
     content: string;
-    date: string;
+    created_at: string;
     user: UserProfile;
     reactions?: string;
     reactionCount?: number;
     commentCount?: number;
     shareCount?: number;
     comments?: Comment[];
+    favorites?: boolean; // お気に入りしたユーザーIDの配列
+    likes_count?: number; // いいね数
 }
 
 export interface User {

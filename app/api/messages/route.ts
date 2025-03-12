@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     }
     
     // 既存のDMグループを検索
+
     const existingGroups = await findDirectMessageGroup(userId,targetUserId);
     
     // 既存のグループが見つかった場合はそれを返す
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
     
     // 新しいDMグループを作成
-    const newGroup = await createDirectMessageGroup(userId, userName,targetUserId,targetUserName);
+    const newGroup = await createDirectMessageGroup(userId, targetUserId,targetUserName);
     
     return NextResponse.json({ group: newGroup[0] });
     
