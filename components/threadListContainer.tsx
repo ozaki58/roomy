@@ -11,14 +11,26 @@ import { set } from "react-hook-form";
 interface ThreadListContainerProps {
     threads?: Thread[];
     userId: string;
-    login_userName: string;
     groupId: string;
+    isThreadLiked: (threadId: string) => boolean;
+    isThreadFavorited: (threadId: string) => boolean;
+    onLikeToggled?: (threadId: string, isLiked: boolean) => void;
+    onFavoriteToggled?: (threadId: string, isFavorited: boolean) => void;
   }
 
-export default function ThreadListContainer({ threads: initialThreads = [], userId,login_userName, groupId }: ThreadListContainerProps) {
+export default function ThreadListContainer({ 
+  threads: initialThreads = [], 
+  userId,
+
+  groupId,
+  isThreadLiked, 
+  isThreadFavorited,
+  onLikeToggled,
+  onFavoriteToggled
+}: ThreadListContainerProps) {
     const [threads, setThreads] = useState<Thread[]>(initialThreads);
-  const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
   
   const { fetchThreadById } = useThreadActions();
   const { createComment } = useCommentActions(selectedThread?.id);
@@ -86,13 +98,30 @@ export default function ThreadListContainer({ threads: initialThreads = [], user
     }
   }, [selectedThread]);
 
+  // いいねとお気に入りのコールバック
+  const handleLikeToggled = useCallback((threadId: string, isLiked: boolean) => {
+    console.log(`ThreadListContainer: いいねコールバック - スレッド ${threadId}:`, { 新状態: isLiked });
+    
+    if (onLikeToggled) {
+      onLikeToggled(threadId, isLiked);
+    }
+  }, [onLikeToggled]);
+  
+  const handleFavoriteToggled = useCallback((threadId: string, isFavorited: boolean) => {
+    console.log(`ThreadListContainer: お気に入りコールバック - スレッド ${threadId}:`, { 新状態: isFavorited });
+    
+    if (onFavoriteToggled) {
+      onFavoriteToggled(threadId, isFavorited);
+    }
+  }, [onFavoriteToggled]);
 
   return (
   <ErrorBoundary fallback={<ThreadLoadingError onRetry={() => setThreads(initialThreads)} />}>
      <ThreadListPresentation
        threads={threads}
        userId={userId}
-       login_userName={login_userName}
+       isThreadLiked={isThreadLiked}
+       isThreadFavorited={isThreadFavorited}
        selectedThread={selectedThread}
        isModalOpen={isModalOpen}
        onCloseModal={closeModal}
@@ -100,6 +129,8 @@ export default function ThreadListContainer({ threads: initialThreads = [], user
        onAddComment={handleAddComment}
        onCommentDeleted={handleCommentDeleted}
        onThreadDeleted={handleThreadDeleted}
+       onLikeToggled={handleLikeToggled}
+       onFavoriteToggled={handleFavoriteToggled}
     />
     </ErrorBoundary>
   );

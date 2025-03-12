@@ -5,24 +5,33 @@ import { TextareaForm } from "./textareaForm";
 import { Thread } from "@/components/types";
 import ErrorBoundary from "./errorBoundary";
 import { Button } from "@headlessui/react";
+
 interface ThreadDetailModalProps {
     thread: Thread | null;
     userId: string;
-    login_userName: string;
+    isThreadLiked: (threadId: string) => boolean;
+    isThreadFavorited: (threadId: string) => boolean;
+
     onClose: () => void;
     onCommentDeleted: (commentId: string) => void;
     onThreadDeleted: (threadId: string) => void;
     onAddComment: (content: string) => Promise<void>;
+    onLikeToggled?: (threadId: string, isLiked: boolean) => void;
+    onFavoriteToggled?: (threadId: string, isFavorited: boolean) => void;
 }
 
 export default function ThreadDetailModal({
     thread,
     userId,
-    login_userName,
+    isThreadLiked,
+    isThreadFavorited,
+
     onClose,
     onCommentDeleted,
     onThreadDeleted,
-    onAddComment
+    onAddComment,
+    onLikeToggled,
+    onFavoriteToggled
 }: ThreadDetailModalProps) {
     if (!thread) return null;
 
@@ -42,8 +51,14 @@ export default function ThreadDetailModal({
                     <ThreadCard
                         thread={thread}
                         userId={userId}
+                        isThreadLiked={isThreadLiked}
+                        isThreadFavorited={isThreadFavorited}
+                        isInModal={true}
+        
                         onCommentDeleted={onCommentDeleted}
                         onThreadDeleted={onThreadDeleted}
+                        onLikeToggled={onLikeToggled}
+                        onFavoriteToggled={onFavoriteToggled}
                     />
                     <TextareaForm
                         threadId={thread.id}

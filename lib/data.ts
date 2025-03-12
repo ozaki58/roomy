@@ -75,9 +75,10 @@ export async function fetchThreadsByGroup(groupId: string) {
     SELECT
       t.id,
       t.group_id,
+      t.likes_count,
       t.user_id,
       t.content,
-      t.created_at AS date,
+      t.created_at,
       json_build_object(
         'id', u.id,
         'username', u.username,
@@ -151,6 +152,7 @@ export async function fetchThreadById(threadId: string) {
   const result = await sql`
     SELECT
       t.id,
+      t.likes_count,
       t.group_id,
       t.user_id,
       t.content,
@@ -232,6 +234,14 @@ export async function checkJoinGroup(userId: string, groupId: string) {
   `;
   return result.length > 0;
 }
+export async function checkThreadLiked(userId: string, threadId: string) {
+  const result = await sql`
+    SELECT 1 
+    FROM thread_likes
+    WHERE user_id = ${userId} AND thread_id = ${threadId}
+  `;
+  return result.length > 0;
+}
 export async function GroupDetailById(groupId: string) {
   const result = await sql`
       SELECT 
@@ -254,6 +264,32 @@ export async function leaveGroup(userId: string, groupId: string) {
     const result = await sql`
       DELETE FROM user_groups
       WHERE user_id = ${userId} AND group_id = ${groupId}
+      RETURNING *
+    `;
+    return result;
+  } catch (error) {
+    console.error("Database query error:", error);
+    throw error;
+  }
+}
+export async function deleteLike(userId: string, threadId: string) {
+  try {
+    const result = await sql`
+      DELETE FROM thread_likes
+      WHERE user_id = ${userId} AND thread_id = ${threadId}
+      RETURNING *
+    `;
+    return result;
+  } catch (error) {
+    console.error("Database query error:", error);
+    throw error;
+  }
+}
+export async function createLike(userId: string, threadId: string) {
+  try {
+    const result = await sql`
+      INSERT INTO thread_likes (user_id, thread_id)
+      VALUES (${userId}, ${threadId})
       RETURNING *
     `;
     return result;
@@ -341,10 +377,10 @@ export async function findDirectMessageGroup(userId: string, targetUserId: strin
 }
 
 // DMグループを新規作成する関数
-export async function createDirectMessageGroup(userId: string, userName: string, targetUserId: string,targetUserName: string) {
+export async function createDirectMessageGroup(userId: string, targetUserId: string,targetUserName: string) {
   
   
-  
+  const userName = await UserDetailById(userId);
   const groupName = `${userName} と ${targetUserName}`;
   
   // トランザクションを使用して、グループとユーザーグループ関連を同時に作成
@@ -375,5 +411,154 @@ export async function createDirectMessageGroup(userId: string, userName: string,
     return groupResult;
   });
   
+  return result;
+}
+
+// 複数スレッドのいいね状態を一括取得する関数
+export async function fetchBatchLikeStatus(userId: string, threadIds: string[]) {
+  try {
+    // 効率的なクエリ - IN句で複数のスレッドIDを一度に検索
+    const result = await sql`
+      SELECT thread_id
+      FROM thread_likes
+      WHERE user_id = ${userId}
+      AND thread_id IN ${sql(threadIds)}
+    `;
+    
+    console.log("DB結果:", result); // デバッグ出力
+    
+    // 結果をthreadId: trueの形式のオブジェクトに変換
+    const likedThreadsMap: Record<string, boolean> = {};
+    threadIds.forEach(id => {
+      likedThreadsMap[id] = false;
+    });
+    
+    // 各行を処理してマップを更新
+    for (const row of result) {
+      if (row && row.thread_id) {
+        likedThreadsMap[row.thread_id] = true;
+      }
+    }
+    
+    console.log("変換後のマップ:", likedThreadsMap); // デバッグ出力
+    return likedThreadsMap;
+  } catch (error) {
+    console.error("いいね状態の一括取得エラー:", error);
+    throw error;
+  }
+}
+
+// お気に入り関連の関数
+export async function checkThreadFavorited(userId: string, threadId: string) {
+  const result = await sql`
+    SELECT 1 
+    FROM thread_favorites
+    WHERE user_id = ${userId} AND thread_id = ${threadId}
+  `;
+  return result.length > 0;
+}
+
+export async function createFavorite(userId: string, threadId: string) {
+  try {
+    const result = await sql`
+      INSERT INTO thread_favorites (user_id, thread_id)
+      VALUES (${userId}, ${threadId})
+      RETURNING *
+    `;
+    return result;
+  } catch (error) {
+    console.error("Database query error:", error);
+    throw error;
+  }
+}
+
+export async function deleteFavorite(userId: string, threadId: string) {
+  try {
+    const result = await sql`
+      DELETE FROM thread_favorites
+      WHERE user_id = ${userId} AND thread_id = ${threadId}
+      RETURNING *
+    `;
+    return result;
+  } catch (error) {
+    console.error("Database query error:", error);
+    throw error;
+  }
+}
+
+// 複数スレッドのお気に入り状態を一括取得する関数
+export async function fetchBatchFavoriteStatus(userId: string, threadIds: string[]) {
+  try {
+    const result = await sql`
+      SELECT thread_id
+      FROM thread_favorites
+      WHERE user_id = ${userId}
+      AND thread_id IN ${sql(threadIds)}
+    `;
+    
+
+    const favoritedThreadsMap: Record<string, boolean> = {};
+    threadIds.forEach(id => {
+      favoritedThreadsMap[id] = false;
+    });
+    
+    for (const row of result) {
+      if (row && row.thread_id) {
+        favoritedThreadsMap[row.thread_id] = true;
+      }
+    }
+    
+    return favoritedThreadsMap;
+  } catch (error) {
+    console.error("お気に入り状態の一括取得エラー:", error);
+    throw error;
+  }
+}
+
+// 人気スレッド取得関数
+export async function fetchPopularThreadsByGroup(groupId: string) {
+  const result = await sql`
+    SELECT
+      t.id,
+      t.group_id,
+      t.likes_count,
+      t.user_id,
+      t.content,
+      t.created_at,
+      json_build_object(
+        'id', u.id,
+        'username', u.username,
+        'image_url', u.image_url,
+        'bio', u.bio,
+        'interests', u.interests
+      ) AS user,
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'id', c.id,
+            'thread_id', c.thread_id,
+            'user_id', c.user_id,
+            'content', c.content,
+            'created_at', c.created_at,
+            'user', json_build_object(
+              'id', cu.id,
+              'username', cu.username,
+              'image_url', cu.image_url,
+              'bio', cu.bio,
+              'interests', cu.interests
+            )
+          )
+        ) FILTER (WHERE c.id IS NOT NULL),
+        '[]'
+      ) AS comments
+    FROM threads t
+    LEFT JOIN users u ON t.user_id = u.id
+    LEFT JOIN comments c ON t.id = c.thread_id
+    LEFT JOIN users cu ON c.user_id = cu.id
+    WHERE t.group_id = ${groupId}
+    GROUP BY t.id, t.group_id, t.user_id, t.content, t.created_at, u.id, u.username, u.image_url, u.bio, u.interests
+    ORDER BY t.likes_count DESC NULLS LAST, t.created_at DESC
+    LIMIT 20
+  `;
   return result;
 }

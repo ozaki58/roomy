@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,16 +7,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Trash } from "lucide-react";
+import { Comment, Thread } from "./types";
 import { useCommentActions } from "@/app/hooks/useCommentActions";
-import { Comment } from "./types";
 interface CommentActionsProps {
+
   comment: Comment;
   onCommentDeleted?: (commentId: string) => void;
 }
 
 export default function CommentActions({ comment, onCommentDeleted }: CommentActionsProps) {
+ 
   const { deleteComment } = useCommentActions();
-  
   const handleCommentDelete = async (commentId: string) => {
     try {
       await deleteComment(commentId);
@@ -29,6 +30,7 @@ export default function CommentActions({ comment, onCommentDeleted }: CommentAct
   };
   
   return (
+
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="absolute right-2 top-2">
