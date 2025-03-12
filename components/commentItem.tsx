@@ -9,7 +9,6 @@ interface CommentItemProps {
   isInModall?: boolean;
   userId: string;
   onCommentDeleted?: (commentId: string) => void;
-  login_userName?: string;
   isInModal?: boolean; // モーダル内かどうかを示すフラグを追加
 }
 
@@ -17,7 +16,6 @@ const CommentItem = ({
   comment,
   userId, 
   onCommentDeleted,
-  login_userName,
   isInModal
 }: CommentItemProps) => {
   return (
@@ -25,7 +23,6 @@ const CommentItem = ({
       <UserProfileButton 
         threadOrComment_user={comment.user} 
         login_user={userId} 
-        login_username={login_userName} 
       />
       <div className="flex-1">
         <div className="bg-gray-100 rounded-lg p-2">

@@ -286,7 +286,7 @@ const { deleteThread } = useThreadActions();
               isInModal={isInModal}
               comment={comment} 
               userId={userId} 
-              login_userName={login_userName}
+            
               onCommentDeleted={onCommentDeleted}
             />
             </ErrorBoundary>
