@@ -1,10 +1,10 @@
 // app/api/threads/route.ts
 import { NextResponse } from "next/server";
 import { createCommentByUser, createThread, fetchCommentsByGroup, fetchThreadsByGroup, UserDetailById } from "@/lib/data";
-import { createNotification, getThreadOwner } from "@/lib/notifications";
+import { createNotification, getCommentOwner } from "@/lib/notifications";
 import { createClient } from '@/app/utils/supabase/server';
 
-// POST: スレッド作成エンドポイント
+// POST:  コメント作成エンドポイント
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
@@ -19,22 +19,25 @@ export async function POST(req: Request) {
     // コメントを作成
     const result = await createCommentByUser(threadId, content, createdBy);
     
-    // スレッド作成者を取得
-    const threadOwnerId = await getThreadOwner(threadId);
+    // コメント作成者を取得
+    const commentOwnerId = await getCommentOwner(result[0].id);
     
     // 自分自身のスレッドにコメントした場合は通知しない
-    if (threadOwnerId && threadOwnerId !== createdBy) {
+    if (commentOwnerId && commentOwnerId !== createdBy) {
       // ユーザー名を取得（UI用）
       const userData = await UserDetailById(createdBy);
       
       const username = userData[0].username || 'ユーザー';
-      
+      const userImage = userData[0].image_url || null;
       // スレッド作成者に通知を作成
       await createNotification({
-        userId: threadOwnerId,
+        userId: commentOwnerId,
         type: 'comment',
         content: `${username}さんがあなたのスレッドにコメントしました`,
-        relatedId: threadId
+        relatedId: threadId,
+        actorId: createdBy,
+        actorName: username,
+        actorImage: userImage
       });
     }
     

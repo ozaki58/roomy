@@ -10,12 +10,18 @@ export async function createNotification({
   userId,
   type,
   content,
-  relatedId
+  relatedId,
+  actorId,
+  actorName,
+  actorImage
 }: {
   userId: string;
   type: NotificationType;
   content: string;
   relatedId?: string;
+  actorId?: string;
+  actorName?: string;
+  actorImage?: string;
 }) {
   try {
     const result = await sql`
@@ -24,13 +30,19 @@ export async function createNotification({
         type,
         content,
         related_id,
-        is_read
+        is_read,
+        actor_id,
+        actor_name,
+        actor_image
       ) VALUES (
         ${userId},
         ${type},
         ${content},
         ${relatedId || null},
-        false
+        false,
+        ${actorId || null},
+        ${actorName || null},
+        ${actorImage || null}
       ) RETURNING *
     `;
     
@@ -56,6 +68,25 @@ export async function getThreadOwner(threadId: string) {
     return null;
   }
 }
+//　コメント作成者を取得する関数
+export async function getCommentOwner(commentId: string) {
+  try {
+    const result = await sql`
+      SELECT user_id FROM comments
+      WHERE id = ${commentId}
+      LIMIT 1
+    `;
+    
+    return result.length > 0 ? result[0].user_id : null;
+  } catch (error) {
+    console.error('コメント作成者取得エラー:', error);
+    return null;
+  }
+}
+
+
+
+
 
 // グループメンバーを取得する関数
 export async function getGroupMembers(groupId: string) {

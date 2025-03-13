@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 
 export interface Notification {
+  actor_name: string;
+  actor_image: any;
   id: string;
   user_id: string;
   type: string;

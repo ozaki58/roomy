@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     } 
     const createdBy = user.id;
     const { groupId, content } = await req.json();
-    
+        
     // スレッドを作成
     const result = await createThread(groupId, content, createdBy);
     const newThreadId = result[0].id;
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const otherMembers = groupMembers.filter(memberId => memberId !== createdBy);
     
     const userData = await UserDetailById(createdBy);
-    
+    const userImage = userData[0].image_url || null;
     const username = userData[0].username || 'ユーザー';
     
     // 各メンバーに通知を作成
@@ -33,7 +33,10 @@ export async function POST(req: Request) {
         userId: memberId,
         type: 'thread',
         content: `${username}さんが新しいスレッドを投稿しました`,
-        relatedId: newThreadId
+        relatedId: newThreadId,
+        actorId: createdBy,
+        actorName: username,
+        actorImage: userImage
       });
     }
     

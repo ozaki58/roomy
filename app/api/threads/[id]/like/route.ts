@@ -27,16 +27,21 @@ export async function POST(
       
       // 自分自身のスレッドにいいねした場合は通知しない
       if (threadOwnerId && threadOwnerId !== user.id) {
-        // ユーザー名を取得（UI用）
+        // ユーザー情報を取得
        const userData = await UserDetailById(user.id)
-        const username = userData[0].username || 'ユーザー';
         
-        // スレッド作成者に通知を作成
+        const username = userData[0].username || 'ユーザー';
+        const userImage = userData[0].image_url || null;
+        
+        // スレッド作成者に通知を作成（アクター情報を含む）
         await createNotification({
           userId: threadOwnerId,
           type: 'like',
           content: `${username}さんがあなたのスレッドにいいねしました`,
-          relatedId: threadId
+          relatedId: threadId,
+          actorId: user.id,
+          actorName: username,
+          actorImage: userImage
         });
       }
       

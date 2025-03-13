@@ -26,13 +26,17 @@ export default function RootLayout({
        
           <div className="flex-1 flex flex-col">
            
-            <header className="bg-[#FF5722] border-b p-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
-              <Link href="/home">
-                <h2 className="text-2xl font-bold text-white">roomy</h2>
-              </Link>
-              <NotificationDropdown />
-              <Sidebar />
-         
+            <header className="bg-[#FF5722] border-b p-4 flex items-center sticky top-0 z-10 shadow-sm">
+              <div className="flex-1">
+                <Link href="/home">
+                  <h2 className="text-2xl font-bold text-white">roomy</h2>
+                </Link>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <NotificationDropdown />
+                <Sidebar />
+              </div>
             </header>
             
             <main className="flex-1 overflow-auto p-4">
