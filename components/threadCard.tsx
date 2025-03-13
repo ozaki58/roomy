@@ -255,7 +255,7 @@ const { deleteThread } = useThreadActions();
             onClick={onCommentClick}
           >
             <MessageCircle size={18} />
-            <span>{thread.commentCount || 0}</span>
+            <span>{thread.comments_count || 0}</span>
           </Button>
         
         <Button 

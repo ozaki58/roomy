@@ -5,7 +5,7 @@ import { Thread } from '@/components/types';
 
 export const useThreads = (groupId?: string) => {
   const [threads, setThreads] = useState<Thread[]>([]);
-  const [popularThreads, setPopularThreads] = useState<Thread[]>([]);
+
   const [likedThreadIds, setLikedThreadIds] = useState<Set<string>>(new Set());
   const [favoritedThreadIds, setFavoritedThreadIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -24,12 +24,7 @@ export const useThreads = (groupId?: string) => {
       const data = await response.json();
       setThreads(data.threads || []);
       
-      // 人気スレッドも取得
-      const popularResponse = await fetch(`/api/groups/${groupId}/threads/popular`);
-      if (popularResponse.ok) {
-        const popularData = await popularResponse.json();
-        setPopularThreads(popularData.threads || []);
-      }
+    
       
       // いいねとお気に入りのステータスを取得
       await fetchLikesForThreads(data.threads);
@@ -139,18 +134,7 @@ export const useThreads = (groupId?: string) => {
         })
       );
       
-      // 人気スレッドでも対象スレッドのいいね数のみ更新
-      setPopularThreads(prev => 
-        prev.map(thread => {
-          if (thread.id === threadId) {
-            const newLikesCount = isLiked 
-              ? (thread.likes_count || 0) + 1 
-              : Math.max((thread.likes_count || 0) - 1, 0);
-            return { ...thread, likes_count: newLikesCount };
-          }
-          return thread;
-        })
-      );
+
       
       console.log(`useThreads: いいね状態更新完了 - スレッド ${threadId}`);
     } catch (error) {
@@ -244,7 +228,7 @@ export const useThreads = (groupId?: string) => {
   
   return {
     threads,
-    popularThreads,
+  
     loading,
     error,
     fetchThreads,

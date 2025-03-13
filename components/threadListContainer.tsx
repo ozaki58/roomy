@@ -43,6 +43,11 @@ export default function ThreadListContainer({
 
   const closeModal = () => {
     setIsModalOpen(false);
+    // 親コンポーネントにも非同期で通知（全体更新用）
+    if (onCommentAdded) {
+      // setTimeout でバックグラウンド実行にする
+      onCommentAdded(selectedThread?.id || "");
+    }
     setSelectedThread(null);
   };
 
@@ -92,14 +97,7 @@ export default function ThreadListContainer({
         prevThreads.map(thread => thread.id === selectedThread.id ? updatedThread : thread)
       );
       
-      // 親コンポーネントにも非同期で通知（全体更新用）
-      if (onCommentAdded) {
-        // setTimeout でバックグラウンド実行にする
-        setTimeout(() => {
-          console.log("バックグラウンドで親コンポーネントに通知:", selectedThread.id);
-          onCommentAdded(selectedThread.id);
-        }, 100);
-      }
+      
     } catch (error) {
       console.error("コメント投稿エラー:", error);
     }
@@ -119,13 +117,7 @@ export default function ThreadListContainer({
         prevThreads.map(thread => thread.id === selectedThread.id ? updatedThread : thread)
       );
       
-      // 親コンポーネントにも非同期で通知（全体更新用）
-      if (onCommentAdded) {
-        setTimeout(() => {
-          console.log("バックグラウンドで親コンポーネントに通知:", selectedThread.id);
-          onCommentAdded(selectedThread.id);
-        }, 100);
-      }
+      
     } catch (error) {
       console.error("コメント削除後の更新エラー:", error);
     }
