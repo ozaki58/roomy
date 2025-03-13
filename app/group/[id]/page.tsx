@@ -175,7 +175,7 @@ export default function GroupPage() {
     await leaveGroup();
     setIsLeaving(false);
     setIsLeaveModalOpen(false);
-    router.push('/dashboard');
+    router.push('/home');
     toast({
       title: "グループを退出しました",
       description: "グループから退出しました",
