@@ -72,6 +72,7 @@ export default function GroupPage() {
   const { 
     threads, 
     loading: threadsLoading, 
+    fetchThreads,
     createThread, 
     isThreadLiked,
     isThreadFavorited,
@@ -95,6 +96,22 @@ export default function GroupPage() {
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   
   const favoritedThreads = getFavoritedThreads();
+
+
+
+  const handleCommentAdded = useCallback(async (threadId: string) => {
+    // コメントが追加された場合の処理
+    console.log(`GroupPage: コメント追加通知 - スレッド ${threadId}`);
+    await fetchThreads();
+  }, [fetchThreads]);
+  const handleThreadDeleted = useCallback(async (threadId: string) => {
+    await fetchThreads();
+  }, [fetchThreads]);
+  const handleCommentDeleted = useCallback(async (threadId: string) => {
+    await fetchThreads();
+  }, [fetchThreads]);
+  
+
 
   // いいねとお気に入りの状態が変更された場合に再取得（フックをトップレベルに移動）
   const handleLikeToggled = useCallback(async (threadId: string, isLiked: boolean) => {
@@ -278,10 +295,10 @@ export default function GroupPage() {
             userId={userId || '未指定'} 
             isThreadLiked={isThreadLiked}
             isThreadFavorited={isThreadFavorited}
-          
             groupId={groupId}
             onLikeToggled={handleLikeToggled}
             onFavoriteToggled={handleFavoriteToggled}
+            onCommentAdded={handleCommentAdded}
           />
         </TabsContent>
         
@@ -291,10 +308,10 @@ export default function GroupPage() {
             userId={userId || '未指定'} 
             isThreadLiked={isThreadLiked}
             isThreadFavorited={isThreadFavorited}
-      
             groupId={groupId}
             onLikeToggled={handleLikeToggled}
             onFavoriteToggled={handleFavoriteToggled}
+            onCommentAdded={handleCommentAdded}
           />
         </TabsContent>
         
@@ -305,10 +322,10 @@ export default function GroupPage() {
               userId={userId || '未指定'} 
               isThreadLiked={isThreadLiked}
               isThreadFavorited={isThreadFavorited}
-         
               groupId={groupId}
               onLikeToggled={handleLikeToggled}
               onFavoriteToggled={handleFavoriteToggled}
+              onCommentAdded={handleCommentAdded}
             />
           ) : (
             <div className="text-center p-8 bg-gray-50 rounded-lg">

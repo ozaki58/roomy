@@ -1,23 +1,7 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Thread } from '@/components/types';
 // スレッドの型定義
 
-// キャッシュデータの型定義
-interface ThreadsCache {
-  threads?: Thread[];
-  popularThreads?: Thread[];
-  likedThreadIds?: string[];
-  favoritedThreadIds?: string[];
-  timestamp: number;
-  [key: string]: any; // 動的キーへのアクセスを許可
-}
-
-
-
-const CACHE_TTL = 30000; // 30秒
-
-// 進行中のリクエストを追跡
-const pendingRequests: Record<string, Promise<any>> = {};
 
 export const useThreads = (groupId?: string) => {
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -27,45 +11,48 @@ export const useThreads = (groupId?: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // キャッシュを保持するRef
-  const cacheRef = useRef<Record<string, ThreadsCache>>({});
-  
-  // キャッシュからデータを取得する関数
-  const getFromCache = useCallback((key: string): ThreadsCache | null => {
-    const cachedData = cacheRef.current[key];
-    if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
-      console.log(`キャッシュヒット: ${key}`);
-      return cachedData;
-    }
-    return null;
-  }, []);
-  
-  // キャッシュにデータを保存する関数
-  const saveToCache = useCallback((key: string, data: Partial<ThreadsCache>) => {
-    cacheRef.current[key] = {
-      ...data,
-      timestamp: Date.now()
-    };
-    console.log(`キャッシュ保存: ${key}`);
-  }, []);
-  
-  // いいねとお気に入りのバッチ取得
-  const fetchBatchStatus = async (endpoint: string, threadIds: string[], cachePrefix: string): Promise<string[]> => {
-    if (!threadIds.length) return [];
+  // スレッドの読み込み - キャッシュなしバージョン
+  const fetchThreads = useCallback(async () => {
+    if (!groupId) return;
     
-    const cacheKey = `${cachePrefix}_${threadIds.sort().join('_')}`;
-    
-    // キャッシュを確認
-    const cachedData = getFromCache(cacheKey);
-    const cacheDataKey = `${cachePrefix}ThreadIds`;
-    if (cachedData && cachedData[cacheDataKey]) {
-      return cachedData[cacheDataKey] as string[];
-    }
-    
+    setLoading(true);
     try {
-      console.log(`${cachePrefix}状態取得リクエスト:`, threadIds);
+      // キャッシュチェックを削除
+      const response = await fetch(`/api/threads?groupId=${groupId}`);
+      if (!response.ok) throw new Error("スレッド取得に失敗しました");
       
-      const response = await fetch(endpoint, {
+      const data = await response.json();
+      setThreads(data.threads || []);
+      
+      // 人気スレッドも取得
+      const popularResponse = await fetch(`/api/groups/${groupId}/threads/popular`);
+      if (popularResponse.ok) {
+        const popularData = await popularResponse.json();
+        setPopularThreads(popularData.threads || []);
+      }
+      
+      // いいねとお気に入りのステータスを取得
+      await fetchLikesForThreads(data.threads);
+      await fetchFavoritesForThreads(data.threads);
+      
+    } catch (error) {
+      console.error("スレッド取得エラー:", error);
+      setError("スレッドの読み込み中にエラーが発生しました");
+    } finally {
+      setLoading(false);
+    }
+  }, [groupId]);
+  
+  // いいねステータスの取得
+  const fetchLikesForThreads = useCallback(async (threadsToCheck?: Thread[]) => {
+    try {
+      const threadsArray = threadsToCheck || threads;
+      if (!threadsArray.length) return;
+      
+      const threadIds = threadsArray.map(thread => thread.id);
+      console.log("いいね状態取得リクエスト:", threadIds);
+      
+      const response = await fetch(`/api/user/likes-batch`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,150 +61,61 @@ export const useThreads = (groupId?: string) => {
       });
       
       if (!response.ok) {
-        throw new Error(`${cachePrefix}ステータスの取得に失敗しました`);
+        throw new Error("いいねステータスの取得に失敗しました");
       }
       
       const data = await response.json();
-      console.log(`${cachePrefix}状態レスポンス:`, data);
+      console.log("いいね状態レスポンス:", data);
       
-      // 応答形式によってキー名を調整
-      const resultKey = cachePrefix === 'likes' ? 'likedThreadIds' : 'favoritedThreadIds';
-      const resultIds = data[resultKey] || [];
-      
-      if (Array.isArray(resultIds)) {
-        // キャッシュに保存
-        const cacheData: Partial<ThreadsCache> = {};
-        cacheData[cacheDataKey] = resultIds;
-        saveToCache(cacheKey, cacheData);
-        
-        return resultIds;
+      if (Array.isArray(data.likedThreadIds)) {
+        setLikedThreadIds(new Set(data.likedThreadIds));
       } else {
-        console.error(`${cachePrefix}ステータスのレスポンス形式が不正:`, data);
-        return [];
+        console.error("いいねステータスのレスポンス形式が不正:", data);
       }
     } catch (error) {
-      console.error(`${cachePrefix}ステータス取得エラー:`, error);
-      return [];
-    }
-  };
-  
-  // いいねステータスの取得
-  const fetchLikesForThreads = useCallback(async (threadsToCheck?: Thread[]): Promise<Set<string>> => {
-    try {
-      const threadsArray = threadsToCheck || threads;
-      if (!threadsArray.length) return new Set<string>();
-      
-      const threadIds = threadsArray.map(thread => thread.id);
-      const likedIds = await fetchBatchStatus('/api/user/likes-batch', threadIds, 'likes');
-      
-      const likedSet = new Set<string>(likedIds);
-      setLikedThreadIds(likedSet);
-      return likedSet;
-    } catch (error) {
       console.error("いいねステータス取得エラー:", error);
-      return new Set<string>();
     }
   }, [threads]);
   
   // お気に入りステータスの取得
-  const fetchFavoritesForThreads = useCallback(async (threadsToCheck?: Thread[]): Promise<Set<string>> => {
+  const fetchFavoritesForThreads = useCallback(async (threadsToCheck?: Thread[]) => {
     try {
       const threadsArray = threadsToCheck || threads;
-      if (!threadsArray.length) return new Set<string>();
+      if (!threadsArray.length) return;
       
       const threadIds = threadsArray.map(thread => thread.id);
-      const favoritedIds = await fetchBatchStatus('/api/user/favorites-batch', threadIds, 'favorite');
+      console.log("お気に入り状態取得リクエスト:", threadIds);
       
-      const favoritedSet = new Set<string>(favoritedIds);
-      setFavoritedThreadIds(favoritedSet);
-      return favoritedSet;
+      const response = await fetch(`/api/user/favorites-batch`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ threadIds }),
+      });
+      
+      if (!response.ok) {
+        throw new Error("お気に入りステータスの取得に失敗しました");
+      }
+      
+      const data = await response.json();
+      console.log("お気に入り状態レスポンス:", data);
+      
+      if (Array.isArray(data.favoritedThreadIds)) {
+        setFavoritedThreadIds(new Set(data.favoritedThreadIds));
+      } else {
+        console.error("お気に入りステータスのレスポンス形式が不正:", data);
+      }
     } catch (error) {
       console.error("お気に入りステータス取得エラー:", error);
-      return new Set<string>();
     }
   }, [threads]);
-  
-  // スレッドの読み込み
-  const fetchThreads = useCallback(async (forceRefresh = false) => {
-    if (!groupId) return;
-    
-    const cacheKey = `threads_${groupId}`;
-    
-    // 強制リフレッシュでなければキャッシュを確認
-    if (!forceRefresh) {
-      const cachedData = getFromCache(cacheKey);
-      if (cachedData) {
-        if (cachedData.threads) setThreads(cachedData.threads);
-        if (cachedData.popularThreads) setPopularThreads(cachedData.popularThreads);
-        if (cachedData.likedThreadIds) setLikedThreadIds(new Set<string>(cachedData.likedThreadIds));
-        if (cachedData.favoritedThreadIds) setFavoritedThreadIds(new Set<string>(cachedData.favoritedThreadIds));
-        setLoading(false);
-        return;
-      }
-    }
-    
-    // 同じリクエストが進行中なら再利用
-    if (cacheKey in pendingRequests && !forceRefresh) {
-      console.log(`既存リクエスト再利用: ${cacheKey}`);
-      await pendingRequests[cacheKey];
-      return;
-    }
-    
-    setLoading(true);
-    
-    const requestPromise = (async () => {
-      try {
-        const response = await fetch(`/api/threads?groupId=${groupId}`);
-        if (!response.ok) throw new Error("スレッド取得に失敗しました");
-        
-        const data = await response.json();
-        const threadsData = data.threads || [];
-        setThreads(threadsData);
-        
-        // 人気スレッドも取得
-        const popularResponse = await fetch(`/api/groups/${groupId}/threads/popular`);
-        let popularData: Thread[] = [];
-        
-        if (popularResponse.ok) {
-          const popularJson = await popularResponse.json();
-          popularData = popularJson.threads || [];
-          setPopularThreads(popularData);
-        }
-        
-     
-        const threadIds = threadsData.map((thread: Thread) => thread.id);
-        const likeIds = await fetchBatchStatus('/api/user/likes-batch', threadIds, 'likes');
-        const favoriteIds = await fetchBatchStatus('/api/user/favorites-batch', threadIds, 'favorite');
-        
-        setLikedThreadIds(new Set<string>(likeIds));
-        setFavoritedThreadIds(new Set<string>(favoriteIds));
-        
-    
-        saveToCache(cacheKey, {
-          threads: threadsData,
-          popularThreads: popularData,
-          likedThreadIds: likeIds,
-          favoritedThreadIds: favoriteIds
-        });
-        
-      } catch (error) {
-        console.error("スレッド取得エラー:", error);
-        setError("スレッドの読み込み中にエラーが発生しました");
-      } finally {
-        setLoading(false);
-        delete pendingRequests[cacheKey];
-      }
-    })();
-    
-    pendingRequests[cacheKey] = requestPromise;
-    return requestPromise;
-  }, [groupId, getFromCache, saveToCache]);
 
   // 単一スレッドのいいねステータスを更新
   const updateThreadLikeStatus = useCallback(async (threadId: string, isLiked: boolean) => {
     console.log(`useThreads: いいね状態更新 - スレッド ${threadId}:`, { 新状態: isLiked });
     try {
-   
+      // いいね状態のセットを更新
       setLikedThreadIds(prev => {
         const newSet = new Set(prev);
         if (isLiked) {
@@ -228,9 +126,9 @@ export const useThreads = (groupId?: string) => {
         return newSet;
       });
       
-    
+      // 対象スレッドのいいね数のみ更新
       setThreads(prev => 
-        prev.map((thread: Thread) => {
+        prev.map(thread => {
           if (thread.id === threadId) {
             const newLikesCount = isLiked 
               ? (thread.likes_count || 0) + 1 
@@ -243,7 +141,7 @@ export const useThreads = (groupId?: string) => {
       
       // 人気スレッドでも対象スレッドのいいね数のみ更新
       setPopularThreads(prev => 
-        prev.map((thread: Thread) => {
+        prev.map(thread => {
           if (thread.id === threadId) {
             const newLikesCount = isLiked 
               ? (thread.likes_count || 0) + 1 
@@ -253,13 +151,6 @@ export const useThreads = (groupId?: string) => {
           return thread;
         })
       );
-      
-      // いいね関連のキャッシュを無効化
-      Object.keys(cacheRef.current).forEach(key => {
-        if (key.startsWith('likes_')) {
-          delete cacheRef.current[key];
-        }
-      });
       
       console.log(`useThreads: いいね状態更新完了 - スレッド ${threadId}`);
     } catch (error) {
@@ -271,7 +162,7 @@ export const useThreads = (groupId?: string) => {
   const updateThreadFavoriteStatus = useCallback(async (threadId: string, isFavorited: boolean) => {
     console.log(`useThreads: お気に入り状態更新 - スレッド ${threadId}:`, { 新状態: isFavorited });
     try {
-     
+      // お気に入り状態のセットを更新
       setFavoritedThreadIds(prev => {
         const newSet = new Set(prev);
         if (isFavorited) {
@@ -282,53 +173,39 @@ export const useThreads = (groupId?: string) => {
         return newSet;
       });
       
-      // お気に入り関連のキャッシュを無効化
-      Object.keys(cacheRef.current).forEach(key => {
-        if (key.startsWith('favorite_')) {
-          delete cacheRef.current[key];
-        }
-      });
-      
       console.log(`useThreads: お気に入り状態更新完了 - スレッド ${threadId}`);
     } catch (error) {
       console.error(`useThreads: お気に入り状態更新エラー - スレッド ${threadId}:`, error);
     }
   }, []);
   
-
+  // ファボ済みスレッドのフィルタリング
   const getFavoritedThreads = useCallback(() => {
     return threads.filter(thread => favoritedThreadIds.has(thread.id));
   }, [threads, favoritedThreadIds]);
   
-
+  // スレッドのいいね状態の確認
   const isThreadLiked = useCallback((threadId: string): boolean => {
     return likedThreadIds.has(threadId);
   }, [likedThreadIds]);
   
-
+  // スレッドのお気に入り状態の確認
   const isThreadFavorited = useCallback((threadId: string): boolean => {
     return favoritedThreadIds.has(threadId);
   }, [favoritedThreadIds]);
-  
-  
-  const deleteThread = useCallback(async (threadId: string) => {
+   // スレッド削除
+   const deleteThread = useCallback(async (threadId: string) => {
     try {
       const response = await fetch(`/api/threads/${threadId}`, { method: "DELETE" });
       if (!response.ok) throw new Error("スレッド削除に失敗しました");
       
-     
-      if (groupId) {
-        const groupCacheKey = `threads_${groupId}`;
-        delete cacheRef.current[groupCacheKey];
-      }
-      
-      await fetchThreads(true); // 強制リフレッシュ
+      await fetchThreads(); // 削除後に再取得
       return true;
     } catch (error) {
       console.error("スレッド削除エラー:", error);
       return false;
     }
-  }, [fetchThreads, groupId]);
+  }, [fetchThreads]);
 
   // スレッド作成
   const createThread = useCallback(async (content: string) => {
@@ -339,6 +216,7 @@ export const useThreads = (groupId?: string) => {
         body: JSON.stringify({
           groupId,
           content,
+         
         }),
       });
       
@@ -347,42 +225,21 @@ export const useThreads = (groupId?: string) => {
         throw new Error(errorData.error || "スレッド作成に失敗しました");
       }
       
-      // このグループに関連するキャッシュを無効化
-      if (groupId) {
-        const groupCacheKey = `threads_${groupId}`;
-        delete cacheRef.current[groupCacheKey];
-      }
-      
-      await fetchThreads(true); // 強制リフレッシュ
+      await fetchThreads();
       return true;
     } catch (error) {
       console.error("スレッド作成エラー:", error);
       return false;
     }
   }, [groupId, fetchThreads]);
-  
-  // キャッシュをクリアする関数
-  const clearCache = useCallback(() => {
-    cacheRef.current = {};
-    console.log("キャッシュをクリアしました");
-  }, []);
+
+
   
   // 初回読み込み
   useEffect(() => {
     if (groupId) {
       fetchThreads();
     }
-    
-    // コンポーネントのアンマウント時にこのグループに関連するキャッシュを削除
-    return () => {
-      if (groupId) {
-        Object.keys(cacheRef.current).forEach(key => {
-          if (key.includes(groupId)) {
-            delete cacheRef.current[key];
-          }
-        });
-      }
-    };
   }, [groupId, fetchThreads]);
   
   return {
@@ -399,7 +256,6 @@ export const useThreads = (groupId?: string) => {
     updateThreadLikeStatus,
     updateThreadFavoriteStatus,
     deleteThread,
-    createThread,
-    clearCache
+    createThread
   };
 }; 
