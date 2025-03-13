@@ -1,16 +1,47 @@
 // app/api/threads/route.ts
 import { NextResponse } from "next/server";
-import { createCommentByUser, createThread, fetchCommentsByGroup, fetchThreadsByGroup } from "@/lib/data";
+import { createCommentByUser, createThread, fetchCommentsByGroup, fetchThreadsByGroup, UserDetailById } from "@/lib/data";
+import { createNotification, getThreadOwner } from "@/lib/notifications";
+import { createClient } from '@/app/utils/supabase/server';
 
 // POST: スレッド作成エンドポイント
 export async function POST(req: Request) {
   try {
-    const { threadId, content, createdBy } = await req.json();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
+    }
+    
+    const { threadId, content } = await req.json();
+    const createdBy = user.id;
+    
+    // コメントを作成
     const result = await createCommentByUser(threadId, content, createdBy);
+    
+    // スレッド作成者を取得
+    const threadOwnerId = await getThreadOwner(threadId);
+    
+    // 自分自身のスレッドにコメントした場合は通知しない
+    if (threadOwnerId && threadOwnerId !== createdBy) {
+      // ユーザー名を取得（UI用）
+      const userData = await UserDetailById(createdBy);
+      
+      const username = userData[0].username || 'ユーザー';
+      
+      // スレッド作成者に通知を作成
+      await createNotification({
+        userId: threadOwnerId,
+        type: 'comment',
+        content: `${username}さんがあなたのスレッドにコメントしました`,
+        relatedId: threadId
+      });
+    }
+    
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    console.error("Error creating thread:", error);
-    return NextResponse.json({ error: "Thread creation failed" }, { status: 500 });
+    console.error("Error creating comment:", error);
+    return NextResponse.json({ error: "Comment creation failed" }, { status: 500 });
   }
 }
 

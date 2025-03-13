@@ -1,7 +1,9 @@
 // app/api/threads/route.ts
 import { NextResponse } from "next/server";
-import { createThread, fetchCommentsByGroup, fetchThreadsByGroup } from "@/lib/data";
+import { createThread, fetchCommentsByGroup, fetchThreadsByGroup, UserDetailById } from "@/lib/data";
 import { createClient } from '@/app/utils/supabase/server';
+import { createNotification, getGroupMembers } from "@/lib/notifications";
+
 // POST: スレッド作成エンドポイント
 export async function POST(req: Request) {
   try {
@@ -12,7 +14,29 @@ export async function POST(req: Request) {
     } 
     const createdBy = user.id;
     const { groupId, content } = await req.json();
+    
+    // スレッドを作成
     const result = await createThread(groupId, content, createdBy);
+    const newThreadId = result[0].id;
+    
+    // 同じグループのメンバーを取得（作成者自身を除く）
+    const groupMembers = await getGroupMembers(groupId);
+    const otherMembers = groupMembers.filter(memberId => memberId !== createdBy);
+    
+    const userData = await UserDetailById(createdBy);
+    
+    const username = userData[0].username || 'ユーザー';
+    
+    // 各メンバーに通知を作成
+    for (const memberId of otherMembers) {
+      await createNotification({
+        userId: memberId,
+        type: 'thread',
+        content: `${username}さんが新しいスレッドを投稿しました`,
+        relatedId: newThreadId
+      });
+    }
+    
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error("Error creating thread:", error);

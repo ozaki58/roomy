@@ -5,7 +5,7 @@ import Sidebar from "@/components/sidebar";
 
 import { Menu } from "lucide-react"; 
 import Link from "next/link";
-
+import { NotificationDropdown } from "@/components/notification/NotificationDropdown";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,12 +30,13 @@ export default function RootLayout({
               <Link href="/home">
                 <h2 className="text-2xl font-bold text-white">roomy</h2>
               </Link>
+              <NotificationDropdown />
               <Sidebar />
          
             </header>
             
             <main className="flex-1 overflow-auto p-4">
-              {children}
+              {children}  
             </main>
           </div>
         </div>
