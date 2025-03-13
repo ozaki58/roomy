@@ -22,6 +22,7 @@ export interface Thread {
     id: string;
     group_id: string;
     content: string;
+    comments_count: number;
     created_at: string;
     user: UserProfile;
     reactions?: string;

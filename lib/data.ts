@@ -79,6 +79,7 @@ export async function fetchThreadsByGroup(groupId: string) {
       t.user_id,
       t.content,
       t.created_at,
+      COUNT(c.id) AS comments_count,
       json_build_object(
         'id', u.id,
         'username', u.username,
@@ -157,6 +158,7 @@ export async function fetchThreadById(threadId: string) {
       t.user_id,
       t.content,
       t.created_at,
+      COUNT(c.id) AS comments_count,
       json_build_object(
         'id', u.id,
         'username', u.username,

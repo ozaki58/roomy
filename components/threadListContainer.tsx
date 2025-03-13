@@ -16,6 +16,7 @@ interface ThreadListContainerProps {
     isThreadFavorited: (threadId: string) => boolean;
     onLikeToggled?: (threadId: string, isLiked: boolean) => void;
     onFavoriteToggled?: (threadId: string, isFavorited: boolean) => void;
+    onCommentAdded?: (threadId: string) => void;
   }
 
 export default function ThreadListContainer({ 
@@ -26,7 +27,8 @@ export default function ThreadListContainer({
   isThreadLiked, 
   isThreadFavorited,
   onLikeToggled,
-  onFavoriteToggled
+  onFavoriteToggled,
+  onCommentAdded
 }: ThreadListContainerProps) {
     const [threads, setThreads] = useState<Thread[]>(initialThreads);
     const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
@@ -41,6 +43,11 @@ export default function ThreadListContainer({
 
   const closeModal = () => {
     setIsModalOpen(false);
+    // 親コンポーネントにも非同期で通知（全体更新用）
+    if (onCommentAdded) {
+      // setTimeout でバックグラウンド実行にする
+      onCommentAdded(selectedThread?.id || "");
+    }
     setSelectedThread(null);
   };
 
@@ -54,17 +61,20 @@ export default function ThreadListContainer({
     if (!threadId) return;
     
     try {
+      console.log("スレッド再取得中:", threadId);
       const updatedThread = await fetchThreadById(threadId);
       
       // 選択されたスレッドを更新
       if (selectedThread && selectedThread.id === threadId) {
+        console.log("スレッド更新中:", updatedThread);
         setSelectedThread(updatedThread);
       }
       
       // リスト内のスレッドを更新
-      setThreads(prevThreads =>
-        prevThreads.map(thread => (thread.id === threadId ? updatedThread : thread))
-      );
+      setThreads(prevThreads => {
+        console.log("スレッドリスト更新中:", prevThreads.map(thread => thread.id));
+        return prevThreads.map(thread => (thread.id === threadId ? updatedThread : thread));
+      });
     } catch (error) {
       console.error("スレッド再取得エラー:", error);
     }
@@ -75,18 +85,43 @@ export default function ThreadListContainer({
     if (!selectedThread) return;
     
     try {
+      console.log("コメント投稿中:", selectedThread.id);
       await createComment(content, userId);
-      await refetchThread(selectedThread.id);
+      
+      // まず選択中のスレッドのみを更新
+      const updatedThread = await fetchThreadById(selectedThread.id);
+      setSelectedThread(updatedThread);
+      
+      // リスト内の当該スレッドだけを更新
+      setThreads(prevThreads => 
+        prevThreads.map(thread => thread.id === selectedThread.id ? updatedThread : thread)
+      );
+      
+      
     } catch (error) {
       console.error("コメント投稿エラー:", error);
     }
-  }, [selectedThread, createComment, userId, refetchThread]);
+  }, [selectedThread, createComment, userId, onCommentAdded, fetchThreadById]);
 
-  // コメント削除後の処理
+  // コメント削除でも同様の修正
   const handleCommentDeleted = useCallback(async (commentId: string) => {
     if (!selectedThread) return;
-    await refetchThread(selectedThread.id);
-  }, [selectedThread, refetchThread]);
+    
+    try {
+      // まず選択中のスレッドのみを更新
+      const updatedThread = await fetchThreadById(selectedThread.id);
+      setSelectedThread(updatedThread);
+      
+      // リスト内の当該スレッドだけを更新
+      setThreads(prevThreads => 
+        prevThreads.map(thread => thread.id === selectedThread.id ? updatedThread : thread)
+      );
+      
+      
+    } catch (error) {
+      console.error("コメント削除後の更新エラー:", error);
+    }
+  }, [selectedThread, fetchThreadById, onCommentAdded]);
 
   // スレッド削除後の処理
   const handleThreadDeleted = useCallback((threadId: string) => {
