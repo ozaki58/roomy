@@ -23,7 +23,8 @@ export async function login(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/home')
+  const returnTo = formData.get('returnTo') || 'home';
+  redirect(`/${returnTo}?reload=true`);
 }
 
 export async function signup(formData: FormData) {
