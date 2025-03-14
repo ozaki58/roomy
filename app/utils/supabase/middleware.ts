@@ -45,7 +45,7 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/searchGroup') &&
     !request.nextUrl.pathname.startsWith('/api/groups') &&
     !request.nextUrl.pathname.startsWith('/group') && 
-    !request.nextUrl.pathname.startsWith('/') &&
+    (request.nextUrl.pathname !== '/' && !request.nextUrl.pathname.startsWith('/some-other-path')) &&
     !request.nextUrl.pathname.startsWith('/api/threads') 
   ) {
     // no user, potentially respond by redirecting the user to the login page

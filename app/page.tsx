@@ -1,13 +1,16 @@
 // app/page.tsx
-'use client';
+
 import { redirect } from 'next/navigation';
-import { createClient } from '@/app/utils/supabase/client';
-export default async function App() {
-  const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
+import { createClient } from '@/app/utils/supabase/server';
+
+const supabase = await createClient();
+const { data: { user } } = await supabase.auth.getUser();
+export default function App() {
+
+  if (user) {
     redirect('/home');
   } else {
     redirect('/searchGroup');
   }
+  return null;
 }

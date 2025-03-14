@@ -101,9 +101,10 @@ const { deleteThread } = useThreadActions();
   }
   const handleLike = async () => {
     if (isLikeLoading) return;
-    unAuthenticated_toast();
     
     try {
+      unAuthenticated_toast();
+    
       setIsLikeLoading(true);
       const currentLikedState = isLiked;
       const threadId = thread.id; // スレッドIDを明示的に変数に
@@ -148,8 +149,9 @@ const { deleteThread } = useThreadActions();
 
   const handleFavorite = async () => {
     if (isFavoriteLoading) return;
-    unAuthenticated_toast();
+    
     try {
+      unAuthenticated_toast();
       setIsFavoriteLoading(true);
       const currentFavoriteState = isFavorite;
       const threadId = thread.id; // スレッドIDを明示的に変数に
