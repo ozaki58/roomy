@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Thread } from '@/components/types';
 // スレッドの型定義
 
-
+import { createClient } from '../utils/supabase/client';
 export const useThreads = (groupId?: string) => {
   const [threads, setThreads] = useState<Thread[]>([]);
 
@@ -13,6 +13,8 @@ export const useThreads = (groupId?: string) => {
   
   // スレッドの読み込み - キャッシュなしバージョン
   const fetchThreads = useCallback(async () => {
+    const supabase = await createClient();
+    const { data: { session } } = await supabase.auth.getSession();
     if (!groupId) return;
     
     setLoading(true);
@@ -27,8 +29,10 @@ export const useThreads = (groupId?: string) => {
     
       
       // いいねとお気に入りのステータスを取得
-      await fetchLikesForThreads(data.threads);
-      await fetchFavoritesForThreads(data.threads);
+      if (session) {
+        await fetchLikesForThreads(data.threads);
+        await fetchFavoritesForThreads(data.threads);
+      }
       
     } catch (error) {
       console.error("スレッド取得エラー:", error);

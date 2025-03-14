@@ -8,10 +8,12 @@ import ErrorBoundary from "./errorBoundary";
 import { ThreadLoadingError } from "./error";
 import { useThreads } from "@/app/hooks/useThreads";
 import { set } from "react-hook-form";
+import { useToast } from "@/components/ui/use-toast";
 interface ThreadListContainerProps {
     threads?: Thread[];
     userId: string;
     groupId: string;
+    unAuthenticated_toast: () => void;
     isThreadLiked: (threadId: string) => boolean;
     isThreadFavorited: (threadId: string) => boolean;
     onLikeToggled?: (threadId: string, isLiked: boolean) => void;
@@ -22,7 +24,7 @@ interface ThreadListContainerProps {
 export default function ThreadListContainer({ 
   threads: initialThreads = [], 
   userId,
-
+  unAuthenticated_toast,
   groupId,
   isThreadLiked, 
   isThreadFavorited,
@@ -83,6 +85,7 @@ export default function ThreadListContainer({
   // コメント投稿処理
   const handleAddComment = useCallback(async (content: string) => {
     if (!selectedThread) return;
+    unAuthenticated_toast();
     
     try {
       console.log("コメント投稿中:", selectedThread.id);
@@ -162,6 +165,7 @@ export default function ThreadListContainer({
        onCloseModal={closeModal}
        onCommentClick={handleCommentClick}
        onAddComment={handleAddComment}
+       unAuthenticated_toast={unAuthenticated_toast}
        onCommentDeleted={handleCommentDeleted}
        onThreadDeleted={handleThreadDeleted}
        onLikeToggled={handleLikeToggled}

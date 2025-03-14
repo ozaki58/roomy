@@ -25,7 +25,7 @@ interface ThreadCardProps {
   isThreadLiked: (threadId: string) => boolean;
   isThreadFavorited: (threadId: string) => boolean;
   isInModal?: boolean;
- 
+  unAuthenticated_toast: () => void;
   onCommentClick?: () => void;
   userId: string;
   login_userName?: string;
@@ -43,6 +43,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   onCommentClick,
   userId,
   login_userName,
+  unAuthenticated_toast,
   onCommentDeleted,
   onThreadDeleted,
   onLikeToggled,
@@ -100,6 +101,7 @@ const { deleteThread } = useThreadActions();
   }
   const handleLike = async () => {
     if (isLikeLoading) return;
+    unAuthenticated_toast();
     
     try {
       setIsLikeLoading(true);
@@ -138,10 +140,7 @@ const { deleteThread } = useThreadActions();
       console.log(`いいね完了 - スレッド ${threadId}`, { 新状態: !currentLikedState });
     } catch (error) {
       console.error("いいねエラー:", error);
-      toast({
-        title: "いいねに失敗しました",
-        variant: "destructive",
-      });
+     
     } finally {
       setIsLikeLoading(false);
     }
@@ -149,7 +148,7 @@ const { deleteThread } = useThreadActions();
 
   const handleFavorite = async () => {
     if (isFavoriteLoading) return;
-    
+    unAuthenticated_toast();
     try {
       setIsFavoriteLoading(true);
       const currentFavoriteState = isFavorite;
@@ -185,10 +184,7 @@ const { deleteThread } = useThreadActions();
       console.log(`お気に入り完了 - スレッド ${threadId}`, { 新状態: !currentFavoriteState });
     } catch (error) {
       console.error("お気に入りエラー:", error);
-      toast({
-        title: "お気に入りに失敗しました",
-        variant: "destructive",
-      });
+     
     } finally {
       setIsFavoriteLoading(false);
     }

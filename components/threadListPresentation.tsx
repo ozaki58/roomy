@@ -14,6 +14,7 @@ interface ThreadListPresentationProps {
     isModalOpen: boolean;
     onCloseModal: () => void;
     onCommentClick: (thread: Thread) => void;
+    unAuthenticated_toast: () => void;
     onAddComment: (content: string) => Promise<void>;
     onCommentDeleted: ( commentId: string) => void;
     onThreadDeleted: (threadId: string ) => void;
@@ -36,7 +37,8 @@ interface ThreadListPresentationProps {
     onCommentDeleted,
     onThreadDeleted,
     onLikeToggled,
-    onFavoriteToggled
+    onFavoriteToggled,
+    unAuthenticated_toast
   }: ThreadListPresentationProps) {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -49,6 +51,7 @@ interface ThreadListPresentationProps {
               thread={{ ...thread, comments: (thread.comments || []).slice(0, 2) }}
               isThreadLiked={isThreadLiked}
               isThreadFavorited={isThreadFavorited}
+              unAuthenticated_toast={unAuthenticated_toast}
               onCommentClick={() => onCommentClick(thread)}
               userId={userId}
           
@@ -67,6 +70,7 @@ interface ThreadListPresentationProps {
             userId={userId}
             isThreadLiked={isThreadLiked}
             isThreadFavorited={isThreadFavorited}
+            unAuthenticated_toast={unAuthenticated_toast}
             onClose={onCloseModal}
             onCommentDeleted={onCommentDeleted}
             onThreadDeleted={onThreadDeleted}
