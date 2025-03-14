@@ -157,10 +157,16 @@ export default function NotificationPage() {
                             {renderUserAvatar(notification)}
                             {notification.content}
                           </p>
+                        
+                          
+                      
                           <p className="text-xs text-gray-500 ml-2">
                             {formatDate(notification.created_at)}
                           </p>
                         </div>
+                        <p className="texs-m text-gray-500 mt-1 ml-2">
+                            {notification.thread_details.content}
+                          </p>
                         {notification.related_id && (
                           <p className="text-sm text-gray-600 mt-1 ml-8">
                             スレッドをタップして表示

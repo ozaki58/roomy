@@ -18,20 +18,62 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     
-    // PostgreSQLクエリを構築
+    // スレッド情報を含めた通知クエリの構築
     let queryStr = `
-      SELECT * FROM notifications
-      WHERE user_id = $1
-      ORDER BY created_at DESC
+      SELECT 
+        n.*,
+        CASE
+          WHEN n.type = 'thread' OR n.type = 'comment' OR n.type = 'like' THEN
+            (SELECT json_build_object(
+              'id', t.id,
+              'content', t.content,
+              'group_id', t.group_id,
+              'created_at', t.created_at,
+              'user', json_build_object(
+                'id', u.id,
+                'username', u.username,
+                'image_url', u.image_url
+              )
+            )
+            FROM threads t
+            LEFT JOIN users u ON t.user_id = u.id
+            WHERE t.id = n.related_id
+            LIMIT 1)
+          ELSE NULL
+        END AS thread_details
+      FROM notifications n
+      WHERE n.user_id = $1
+      ORDER BY n.created_at DESC
     `;
     
     let params = [userId];
     
     if (type) {
       queryStr = `
-        SELECT * FROM notifications
-        WHERE user_id = $1 AND type = $2
-        ORDER BY created_at DESC
+        SELECT 
+          n.*,
+          CASE
+            WHEN n.type = 'thread' OR n.type = 'comment' OR n.type = 'like' THEN
+              (SELECT json_build_object(
+                'id', t.id,
+                'content', t.content,
+                'group_id', t.group_id,
+                'created_at', t.created_at,
+                'user', json_build_object(
+                  'id', u.id,
+                  'username', u.username,
+                  'image_url', u.image_url
+                )
+              )
+              FROM threads t
+              LEFT JOIN users u ON t.user_id = u.id
+              WHERE t.id = n.related_id
+              LIMIT 1)
+            ELSE NULL
+          END AS thread_details
+        FROM notifications n
+        WHERE n.user_id = $1 AND n.type = $2
+        ORDER BY n.created_at DESC
       `;
       params = [userId, type];
     }

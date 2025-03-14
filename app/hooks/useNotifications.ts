@@ -8,8 +8,11 @@ export interface Notification {
   type: string;
   content: string;
   related_id?: string;
-  is_read: boolean;
+  is_read: boolean; 
   created_at: string;
+  thread_details: {
+    content: string;
+  };
 }
 
 export function useNotifications() {
