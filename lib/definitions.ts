@@ -49,3 +49,17 @@ export interface User_Group {
     userId: number; // ユーザーID（User.idへの外部キー）
     groupId: number; // グループID（Group.idへの外部キー）
 }
+
+// Notification テーブル
+export interface Notification {
+    id: string;
+    userId: string;         // 通知の受信者ID
+    type: 'comment' | 'like' | 'mention' | 'stats';  // 通知タイプ
+    sourceId: string;       // 関連するスレッドやコメントのID
+    sourceContent: string;  // 関連する投稿の内容
+    actorId: string;        // アクションを起こしたユーザーID
+    actorName: string;      // アクションを起こしたユーザー名
+    actorImage: string;     // アクションを起こしたユーザーの画像
+    isRead: boolean;        // 既読フラグ
+    createdAt: string;      // 作成日時
+}
