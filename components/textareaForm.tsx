@@ -49,16 +49,12 @@ export function TextareaForm({
       setIsSubmitting(true);
       if (onThreadSubmit) {
         await onThreadSubmit(data.bio);
-        toast({
-          title: "スレッドを投稿しました！",
-        });
+       
       }
       // コメント投稿の場合
       else if (threadId && onCommentSubmit) {
         await onCommentSubmit(data.bio);
-        toast({
-          title: "コメントを投稿しました！",
-        });
+       
       }
       
       // フォームをリセット

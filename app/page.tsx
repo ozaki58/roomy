@@ -1,8 +1,4 @@
-// app/page.tsx
-'use client';
-import { redirect } from 'next/navigation';
-
 export default function App() {
-  redirect('/home');
-  return null;
+  // 実際にはこのコンポーネントは表示されない（ミドルウェアでリダイレクト）
+  return <div>リダイレクト中...</div>;
 }

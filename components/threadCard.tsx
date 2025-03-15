@@ -25,7 +25,7 @@ interface ThreadCardProps {
   isThreadLiked: (threadId: string) => boolean;
   isThreadFavorited: (threadId: string) => boolean;
   isInModal?: boolean;
- 
+  unAuthenticated_toast: () => void;
   onCommentClick?: () => void;
   userId: string;
   login_userName?: string;
@@ -43,6 +43,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   onCommentClick,
   userId,
   login_userName,
+  unAuthenticated_toast,
   onCommentDeleted,
   onThreadDeleted,
   onLikeToggled,
@@ -53,7 +54,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   const initialLikedState = isThreadLiked(thread.id);
   const initialFavoritedState = isThreadFavorited(thread.id);
   
-  console.log(`スレッド ${thread.id} 初期状態:`, { liked: initialLikedState, favorited: initialFavoritedState });
+  
   
   const [likeCount, setLikeCount] = useState(thread.likes_count || 0);
   const [isLiked, setIsLiked] = useState(initialLikedState);
@@ -102,6 +103,8 @@ const { deleteThread } = useThreadActions();
     if (isLikeLoading) return;
     
     try {
+      unAuthenticated_toast();
+    
       setIsLikeLoading(true);
       const currentLikedState = isLiked;
       const threadId = thread.id; // スレッドIDを明示的に変数に
@@ -138,10 +141,7 @@ const { deleteThread } = useThreadActions();
       console.log(`いいね完了 - スレッド ${threadId}`, { 新状態: !currentLikedState });
     } catch (error) {
       console.error("いいねエラー:", error);
-      toast({
-        title: "いいねに失敗しました",
-        variant: "destructive",
-      });
+     
     } finally {
       setIsLikeLoading(false);
     }
@@ -151,6 +151,7 @@ const { deleteThread } = useThreadActions();
     if (isFavoriteLoading) return;
     
     try {
+      unAuthenticated_toast();
       setIsFavoriteLoading(true);
       const currentFavoriteState = isFavorite;
       const threadId = thread.id; // スレッドIDを明示的に変数に
@@ -185,10 +186,7 @@ const { deleteThread } = useThreadActions();
       console.log(`お気に入り完了 - スレッド ${threadId}`, { 新状態: !currentFavoriteState });
     } catch (error) {
       console.error("お気に入りエラー:", error);
-      toast({
-        title: "お気に入りに失敗しました",
-        variant: "destructive",
-      });
+     
     } finally {
       setIsFavoriteLoading(false);
     }

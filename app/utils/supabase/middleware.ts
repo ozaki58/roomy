@@ -41,11 +41,21 @@ export async function updateSession(request: NextRequest) {
     !user &&
     !request.nextUrl.pathname.startsWith('/login') &&
     !request.nextUrl.pathname.startsWith('/auth')  &&
-    !request.nextUrl.pathname.startsWith('/lookMail')
+    !request.nextUrl.pathname.startsWith('/lookMail') &&
+    !request.nextUrl.pathname.startsWith('/searchGroup') &&
+    !request.nextUrl.pathname.startsWith('/api/groups') &&
+    !request.nextUrl.pathname.startsWith('/group') && 
+    (request.nextUrl.pathname !== '/' && !request.nextUrl.pathname.startsWith('/some-other-path')) &&
+    !request.nextUrl.pathname.startsWith('/api/threads') 
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+  else  if (request.nextUrl.pathname === '/') {
+    const url = request.nextUrl.clone()
+    url.pathname = user ? '/home' : '/searchGroup'
     return NextResponse.redirect(url)
   }
 

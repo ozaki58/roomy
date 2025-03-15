@@ -1,4 +1,5 @@
 "use client";
+import { useUserInfo } from "@/app/hooks/user-info";
 import { logout } from "@/app/logout/action";
 import { Bell, Home, Search, Settings, User, CirclePlus, X, Menu } from "lucide-react";
 import { useState } from "react";
@@ -8,9 +9,12 @@ export default function Sidebar() {
 
     const toggleSidebar = () => setShowSidebar(!showSidebar);
 
+    const { userId } = useUserInfo();
+
+
     return (
         <>
-            <button 
+            <button
                 onClick={toggleSidebar}
                 className="text-white hover:bg-orange-600 p-2 rounded-full transition-colors"
                 aria-label={showSidebar ? "サイドバーを閉じる" : "サイドバーを開く"}
@@ -19,20 +23,19 @@ export default function Sidebar() {
             </button>
 
             {showSidebar && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black bg-opacity-50 z-30"
                     onClick={toggleSidebar}
                 />
             )}
 
             <div
-                className={`fixed top-0 right-0 w-64 h-full bg-white shadow-lg border-l transition-transform duration-300 ease-in-out z-40 ${
-                    showSidebar ? "translate-x-0" : "translate-x-full"
-                }`}
+                className={`fixed top-0 right-0 w-64 h-full bg-white shadow-lg border-l transition-transform duration-300 ease-in-out z-40 ${showSidebar ? "translate-x-0" : "translate-x-full"
+                    }`}
             >
                 <div className="flex justify-between items-center p-4 border-b">
                     <h2 className="text-xl font-bold">メニュー</h2>
-                    <button 
+                    <button
                         onClick={toggleSidebar}
                         className="p-1 rounded-full hover:bg-gray-200"
                         aria-label="サイドバーを閉じる"
@@ -67,17 +70,41 @@ export default function Sidebar() {
                         設定
                     </a>
                 </nav>
+                {userId && (
+                    <div className="absolute bottom-0 w-full p-4 border-t">
+                        <form action={logout}>
+                            <button
+                                onClick={() => {
+                                    setShowSidebar(false);
+                                    setTimeout(() => window.location.reload(), 300);
+                                }}
+                                type="submit"
+                                className="w-full py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                            >
+                                ログアウト
+                            </button>
+                        </form>
+                    </div>
+                )
+                }
+                {userId == null && (
+                    <div className="absolute bottom-0 w-full p-4 border-t">
 
-                <div className="absolute bottom-0 w-full p-4 border-t">
-                    <form action={logout}>
-                        <button 
-                            type="submit"
-                            className="w-full py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                        <button
+                            onClick={() => {
+                                setShowSidebar(false);
+                                // ログインボタンクリック時
+                                window.location.href = '/login?returnTo=home&reload=true';
+
+                            }}
+
+                            className="w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                         >
-                            ログアウト
+                            ログイン
                         </button>
-                    </form>
-                </div>
+
+                    </div>
+                )}
             </div>
         </>
     );

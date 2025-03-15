@@ -11,7 +11,7 @@ interface ThreadDetailModalProps {
     userId: string;
     isThreadLiked: (threadId: string) => boolean;
     isThreadFavorited: (threadId: string) => boolean;
-
+    unAuthenticated_toast: () => void;
     onClose: () => void;
     onCommentDeleted: (commentId: string) => void;
     onThreadDeleted: (threadId: string) => void;
@@ -25,7 +25,7 @@ export default function ThreadDetailModal({
     userId,
     isThreadLiked,
     isThreadFavorited,
-
+    unAuthenticated_toast,
     onClose,
     onCommentDeleted,
     onThreadDeleted,
@@ -54,7 +54,7 @@ export default function ThreadDetailModal({
                         isThreadLiked={isThreadLiked}
                         isThreadFavorited={isThreadFavorited}
                         isInModal={true}
-        
+                        unAuthenticated_toast={unAuthenticated_toast}
                         onCommentDeleted={onCommentDeleted}
                         onThreadDeleted={onThreadDeleted}
                         onLikeToggled={onLikeToggled}

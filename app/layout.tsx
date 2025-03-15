@@ -6,7 +6,7 @@ import Sidebar from "@/components/sidebar";
 import { Menu } from "lucide-react"; 
 import Link from "next/link";
 import { NotificationDropdown } from "@/components/notification/NotificationDropdown";
-
+import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -42,6 +42,7 @@ export default function RootLayout({
             <main className="flex-1 overflow-auto p-4">
               {children}  
             </main>
+            <Toaster />
           </div>
         </div>
       </body>

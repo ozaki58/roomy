@@ -6,7 +6,7 @@ import { LogOut, UserPlus, Bookmark, ThumbsUp, List, Star } from "lucide-react";
 import { TextareaForm } from "@/components/textareaForm";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // タブコンポーネント
-import { useToast } from '@/components/ui/use-toast';
+import { toast, useToast } from '@/components/ui/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +23,9 @@ import { useThreads } from "@/app/hooks/useThreads";
 import { useUserInfo } from "@/app/hooks/user-info";
 import { useGroup } from "@/app/hooks/useGroup";
 import { Thread } from "@/components/types";
-
+import { createClient } from "@/app/utils/supabase/client";
+import { ToastAction } from "@radix-ui/react-toast";
+import { Session } from "@supabase/supabase-js";
 // LeaveGroupModal コンポーネント
 interface LeaveGroupModalProps {
   isOpen: boolean;
@@ -63,10 +65,17 @@ const LeaveGroupModal: React.FC<LeaveGroupModalProps> = ({
   );
 };
 
+
+const supabase = createClient();
+
+
 export default function GroupPage() {
+
+
   const params = useParams();
   const groupId = Array.isArray(params.id) ? params.id[0] : params.id;
   const router = useRouter();
+
   const { toast } = useToast();
   const { userId } = useUserInfo();
   const { 
@@ -97,10 +106,23 @@ export default function GroupPage() {
   
   const favoritedThreads = getFavoritedThreads();
 
+  const unAuthenticated_toast = () => {
+    if (userId==null) {
+      toast({
+        title: "ログインが必要です",
+        description: "ログインが必要です",
+        action: <ToastAction altText="ログイン" onClick={() => router.push('/login')}>
+          ログイン
+        </ToastAction>,
+      });
+    }
+  }
+    
 
 
   const handleCommentAdded = useCallback(async (threadId: string) => {
-    // コメントが追加された場合の処理
+
+   
     console.log(`GroupPage: コメント追加通知 - スレッド ${threadId}`);
     await fetchThreads();
   }, [fetchThreads]);
@@ -112,9 +134,8 @@ export default function GroupPage() {
   }, [fetchThreads]);
   
 
-
-  // いいねとお気に入りの状態が変更された場合に再取得（フックをトップレベルに移動）
   const handleLikeToggled = useCallback(async (threadId: string, isLiked: boolean) => {
+
     console.log(`GroupPage: いいねコールバック - スレッド ${threadId}:`, { 新状態: isLiked });
     
     
@@ -142,6 +163,7 @@ export default function GroupPage() {
   }, [updateThreadLikeStatus]);
 
   const handleFavoriteToggled = useCallback(async (threadId: string, isFavorited: boolean) => {
+  
     console.log(`GroupPage: お気に入りコールバック - スレッド ${threadId}:`, { 新状態: isFavorited });
     
 
@@ -183,9 +205,17 @@ export default function GroupPage() {
   
   // 脱退ボタンクリック時の処理
   const handleLeaveClick = useCallback(() => {
+    unAuthenticated_toast();
     setIsLeaveModalOpen(true);
   }, []);
-  
+
+  // グループ参加ボタンクリック時の処理
+  const handleJoinGroup = useCallback(() => {
+    unAuthenticated_toast();
+    
+    joinGroup();
+  }, [joinGroup, toast]);
+
   // 脱退確認時の処理
   const handleConfirmLeave = useCallback(async () => {
     setIsLeaving(true);
@@ -207,9 +237,13 @@ export default function GroupPage() {
   }, [userId, createThread]);
 
   if (threadsLoading || groupLoading) {
-    return <div className="p-6">読み込み中...</div>;
+    if (threadsLoading) {
+      return <div className="p-6">スレッド読み込み中...</div>;
+    }
+    if (groupLoading) {
+    return <div className="p-6">グループ読み込み中...</div>;
   }
-  
+  }
   // タブに応じたスレッドのフィルタリング（useCallbackではなく通常の関数に変更）
   const filteredThreads = () => {
     let filteredList = [...threads];
@@ -244,7 +278,7 @@ export default function GroupPage() {
         <h1 className="text-3xl font-bold">{groupName || groupId}</h1>
         {!isMember ? (
           <Button 
-            onClick={joinGroup} 
+            onClick={handleJoinGroup} 
             variant="outline" 
             className="ml-4 text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 transition-colors group"
           >
@@ -296,6 +330,7 @@ export default function GroupPage() {
             isThreadLiked={isThreadLiked}
             isThreadFavorited={isThreadFavorited}
             groupId={groupId}
+            unAuthenticated_toast={unAuthenticated_toast}
             onLikeToggled={handleLikeToggled}
             onFavoriteToggled={handleFavoriteToggled}
             onCommentAdded={handleCommentAdded}
@@ -309,6 +344,7 @@ export default function GroupPage() {
             isThreadLiked={isThreadLiked}
             isThreadFavorited={isThreadFavorited}
             groupId={groupId}
+            unAuthenticated_toast={unAuthenticated_toast}
             onLikeToggled={handleLikeToggled}
             onFavoriteToggled={handleFavoriteToggled}
             onCommentAdded={handleCommentAdded}
@@ -323,6 +359,7 @@ export default function GroupPage() {
               isThreadLiked={isThreadLiked}
               isThreadFavorited={isThreadFavorited}
               groupId={groupId}
+              unAuthenticated_toast={unAuthenticated_toast}
               onLikeToggled={handleLikeToggled}
               onFavoriteToggled={handleFavoriteToggled}
               onCommentAdded={handleCommentAdded}

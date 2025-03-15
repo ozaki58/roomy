@@ -8,9 +8,9 @@ export function useGroup(groupId: string, userId: string | null) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   
-  // グループ詳細情報の取得 - キャッシュなしバージョン
+  // グループ詳細情報の取得 - ローディング状態は外部で管理
   const fetchGroupDetail = useCallback(async () => {
-    if (!groupId) return;
+    if (!groupId) return null;
     
     try {
       const response = await fetch(`/api/groups/${groupId}`);
@@ -29,9 +29,13 @@ export function useGroup(groupId: string, userId: string | null) {
     }
   }, [groupId]);
 
-  // メンバーシップ状態の取得 - キャッシュなしバージョン
+  // メンバーシップ状態の取得 - ローディング状態は外部で管理
   const fetchMembershipStatus = useCallback(async () => {
-    if (!groupId || !userId) return;
+    if (!groupId || !userId) {
+      // 未認証ユーザーはメンバーではない
+      setIsMember(false);
+      return null;
+    }
     
     try {
       const response = await fetch(`/api/groups/join/?userId=${userId}&groupId=${groupId}`);
@@ -46,14 +50,16 @@ export function useGroup(groupId: string, userId: string | null) {
       setError(err instanceof Error ? err : new Error("不明なエラー"));
       console.error("メンバーシップ状態取得エラー:", err);
       return null;
-    } finally {
-      setLoading(false);
     }
   }, [groupId, userId]);
 
   // グループへの参加
   const joinGroup = useCallback(async () => {
-    if (!groupId || !userId) return false;
+    if (!groupId || !userId) 
+      
+
+
+      return false;
     
     try {
       const response = await fetch(`/api/groups/join`, {
@@ -95,11 +101,27 @@ export function useGroup(groupId: string, userId: string | null) {
 
   // 初回レンダリング時に情報取得
   useEffect(() => {
+    const loadGroupData = async () => {
+      setLoading(true); 
+      try {
+    
+        const detailPromise = fetchGroupDetail();
+        const membershipPromise = fetchMembershipStatus();
+        
+     
+        await Promise.all([detailPromise, membershipPromise]);
+      } catch (err) {
+        console.error("グループデータ取得エラー:", err);
+      } finally {
+  
+        setLoading(false);
+      }
+    };
+    
     if (groupId) {
-      fetchGroupDetail();
-    }
-    if (groupId && userId) {
-      fetchMembershipStatus();
+      loadGroupData();
+    } else {
+      setLoading(false); // groupIdがない場合はローディングを終了
     }
   }, [groupId, userId, fetchGroupDetail, fetchMembershipStatus]);
 
@@ -111,9 +133,15 @@ export function useGroup(groupId: string, userId: string | null) {
     error,
     joinGroup,
     leaveGroup,
-    refreshGroup: () => {
-      fetchGroupDetail();
-      if (userId) fetchMembershipStatus();
+    refreshGroup: async () => {
+      setLoading(true);
+      
+      try {
+        await fetchGroupDetail();
+        if (userId) await fetchMembershipStatus();
+      } finally {
+        setLoading(false);
+      }
     }
   };
 }
