@@ -54,7 +54,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   const initialLikedState = isThreadLiked(thread.id);
   const initialFavoritedState = isThreadFavorited(thread.id);
   
-  console.log(`スレッド ${thread.id} 初期状態:`, { liked: initialLikedState, favorited: initialFavoritedState });
+  
   
   const [likeCount, setLikeCount] = useState(thread.likes_count || 0);
   const [isLiked, setIsLiked] = useState(initialLikedState);
