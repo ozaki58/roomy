@@ -4,17 +4,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/app/utils/supabase/client";
 
-// ユーザー情報の型定義
-interface UserProfile {
-  id: string;
-  username?: string;
-  bio?: string;
-  interests?: string;
-  image_url?: string;
-  email?: string;
-  created_at?: string;
-}
-
+import { UserProfile } from "@/components/types";
 
 export function useUserInfo() {
   const [userId, setUserId] = useState<string | null>(null);

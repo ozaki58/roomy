@@ -3,7 +3,8 @@ import { Thread } from '@/components/types';
 // スレッドの型定義
 
 import { createClient } from '../utils/supabase/client';
-export const useThreads = (groupId?: string) => {
+  import { UserProfile } from '@/components/types';
+export const useThreads = (groupId?: string, userProfile?: UserProfile | null) => {
   const [threads, setThreads] = useState<Thread[]>([]);
 
   const [likedThreadIds, setLikedThreadIds] = useState<Set<string>>(new Set());
@@ -181,45 +182,83 @@ export const useThreads = (groupId?: string) => {
   const isThreadFavorited = useCallback((threadId: string): boolean => {
     return favoritedThreadIds.has(threadId);
   }, [favoritedThreadIds]);
-   // スレッド削除
-   const deleteThread = useCallback(async (threadId: string) => {
+  
+  // スレッド削除
+  const deleteThread = useCallback(async (threadId: string) => {
     try {
-      const response = await fetch(`/api/threads/${threadId}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("スレッド削除に失敗しました");
+      // 削除前の状態を保存（ロールバック用）
+      const previousThreads = [...threads];
       
-      await fetchThreads(); // 削除後に再取得
+      // 楽観的に状態を更新
+      setThreads(prev => prev.filter(thread => thread.id !== threadId));
+      console.log("スレッド削除成功");
+      // API呼び出し
+      const response = await fetch(`/api/threads/${threadId}`, { method: "DELETE" });
+      
+      if (!response.ok) {
+        //失敗した場合はロールバック
+        setThreads(previousThreads);
+        throw new Error("スレッド削除に失敗しました");
+      }
+      
+      // 成功した場合、何もしない
       return true;
     } catch (error) {
       console.error("スレッド削除エラー:", error);
       return false;
     }
-  }, [fetchThreads]);
+  }, [threads]);
 
-  // スレッド作成
+
   const createThread = useCallback(async (content: string) => {
     try {
+      const tempId = `temp-${Date.now()}`;
+      
+   
+      const optimisticThread = {
+        id: tempId,
+        group_id: groupId || '',
+        content,
+        comments_count: 0,
+        created_at: new Date().toISOString(),
+        user: userProfile ? 
+          {...userProfile, username: userProfile.username || 'ユーザー'} : 
+          { id: '', username: 'ユーザー', image_url: '' },
+        comments: []
+      } as Thread;  // Thread型としてアサーション
+      
+   
+      setThreads(prev => [optimisticThread, ...prev]);
+      
+     
       const response = await fetch("/api/threads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           groupId,
           content,
-         
         }),
       });
       
       if (!response.ok) {
         const errorData = await response.json();
+        // 失敗した場合は楽観的に追加したスレッドを削除（ロールバック）
+        setThreads(prev => prev.filter(thread => thread.id !== tempId));
         throw new Error(errorData.error || "スレッド作成に失敗しました");
       }
       
-      await fetchThreads();
+      // 4. 成功した場合: APIからの応答で仮のスレッドを更新
+      const result = await response.json();
+      setThreads(prev => 
+        prev.map(thread => thread.id === tempId ? result[0] : thread)
+      );
+      
       return true;
     } catch (error) {
       console.error("スレッド作成エラー:", error);
       return false;
     }
-  }, [groupId, fetchThreads]);
+  }, [groupId, userProfile]);
 
 
   
@@ -232,7 +271,7 @@ export const useThreads = (groupId?: string) => {
   
   return {
     threads,
-  
+    setThreads,
     loading,
     error,
     fetchThreads,

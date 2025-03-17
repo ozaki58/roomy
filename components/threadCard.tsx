@@ -49,8 +49,10 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   onLikeToggled,
   onFavoriteToggled
 }) => {
-
-  // 初期状態を取得して設定
+ 
+  const userObj = thread.user || { username: 'ユーザー', id: '', image_url: '' };
+  
+  
   const initialLikedState = isThreadLiked(thread.id);
   const initialFavoritedState = isThreadFavorited(thread.id);
   
@@ -88,11 +90,12 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
     }
   }, [isThreadLiked, isThreadFavorited, thread.id, isLiked, isFavorite, isLikeLoading, isFavoriteLoading]);
 
-const { deleteThread } = useThreadActions();
+const { deleteThread } = useThreads();
   const handleDeleteClick = async () => {
     try {
       await deleteThread(thread.id);
       if (onThreadDeleted) {
+        console.log("スレッド削除成功");
         onThreadDeleted(thread.id);
       }
     } catch (error) {
@@ -202,13 +205,13 @@ const { deleteThread } = useThreadActions();
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <UserProfileButton threadOrComment_user={thread.user} login_user={userId} />
+            <UserProfileButton threadOrComment_user={userObj} login_user={userId} />
             <div>
-              <div className="font-semibold">{thread.user.username}</div>
+              <div className="font-semibold">{userObj.username}</div>
               <div className="text-sm text-gray-500">{formattedTime}</div>
             </div>
           </div>
-          {thread.user.id === userId && (
+          {userObj.id === userId && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="absolute right-2 top-2">
@@ -274,21 +277,24 @@ const { deleteThread } = useThreadActions();
       </div>
       <div className="border-t p-4">
         <div className="space-y-4">
-          {thread.comments && thread.comments.map((comment, index) => (
-            <ErrorBoundary
-            key={comment.id}
-            fallback={<CommentError comment={comment} />}
-          >
-            <CommentItem 
-              key={comment.id || index} 
-              isInModal={isInModal}
-              comment={comment} 
-              userId={userId} 
-            
-              onCommentDeleted={onCommentDeleted}
-            />
-            </ErrorBoundary>
-          ))}
+          {thread.comments && thread.comments.map((comment, index) => {
+   
+            const commentUserObj = comment.user || { username: 'ユーザー', id: '', image_url: '' };
+            return (
+              <ErrorBoundary
+                key={comment.id}
+                fallback={<CommentError comment={comment} />}
+              >
+                <CommentItem 
+                  key={comment.id || index} 
+                  isInModal={isInModal}
+                  comment={{...comment, user: commentUserObj}} 
+                  userId={userId} 
+                  onCommentDeleted={onCommentDeleted}
+                />
+              </ErrorBoundary>
+            );
+          })}
         </div>
       </div>
      
