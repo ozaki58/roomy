@@ -55,17 +55,27 @@ export async function fetchAllGroupsByUser(userId: string, isPublic: boolean) {
     }
   }
   
-// スレッド作成関数
+// スレッド作成
 export async function createThread(
   groupId: string,
- 
   content: string,
   createdBy: string
 ) {
   const result = await sql`
-    INSERT INTO threads (group_id, content, user_id)
-    VALUES (${groupId}, ${content}, ${createdBy})
-    RETURNING *
+    WITH inserted_thread AS (
+      INSERT INTO threads (group_id, content, user_id)
+      VALUES (${groupId}, ${content}, ${createdBy})
+      RETURNING *
+    )
+    SELECT 
+      t.*,
+      json_build_object(
+        'id', u.id,
+        'username', u.username,
+        'image_url', u.image_url
+      ) as user
+    FROM inserted_thread t
+    JOIN users u ON t.user_id = u.id
   `;
   return result;
 }

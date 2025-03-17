@@ -77,9 +77,10 @@ export default function GroupPage() {
   const router = useRouter();
 
   const { toast } = useToast();
-  const { userId } = useUserInfo();
+  const { userId, userProfile } = useUserInfo();
   const { 
     threads, 
+    setThreads,
     loading: threadsLoading, 
     fetchThreads,
     createThread, 
@@ -90,7 +91,7 @@ export default function GroupPage() {
     getFavoritedThreads,
     updateThreadLikeStatus,
     updateThreadFavoriteStatus
-  } = useThreads(groupId);
+  } = useThreads(groupId, userProfile);
   const { groupName, isMember, loading: groupLoading, joinGroup, leaveGroup } = useGroup(groupId, userId);
   
   // 選択中のタブ状態管理
@@ -120,15 +121,21 @@ export default function GroupPage() {
     
 
 
-  const handleCommentAdded = useCallback(async (threadId: string) => {
+  const handleCommentAdded = useCallback(async (threadId: string, updatedThread: Thread) => {
 
    
     console.log(`GroupPage: コメント追加通知 - スレッド ${threadId}`);
-    await fetchThreads();
-  }, [fetchThreads]);
-  const handleThreadDeleted = useCallback(async (threadId: string) => {
-    await fetchThreads();
-  }, [fetchThreads]);
+    setThreads(prev => 
+      prev.map(thread => thread.id === threadId ? updatedThread : thread)
+    );
+  }, [threads, setThreads]);
+  const handleThreadDeleted = useCallback((threadId: string) => {
+    setThreads(prevThreads => prevThreads.filter(thread => thread.id !== threadId));
+    
+
+  }, [threads, setThreads]);
+
+
   const handleCommentDeleted = useCallback(async (threadId: string) => {
     await fetchThreads();
   }, [fetchThreads]);
@@ -327,7 +334,9 @@ export default function GroupPage() {
           <ThreadListContainer
             threads={filteredThreads()} 
             userId={userId || '未指定'} 
+            userProfile={userProfile || { id: '', username: '', image_url: '' }}
             isThreadLiked={isThreadLiked}
+            onThreadDeleted={handleThreadDeleted}
             isThreadFavorited={isThreadFavorited}
             groupId={groupId}
             unAuthenticated_toast={unAuthenticated_toast}
@@ -341,7 +350,9 @@ export default function GroupPage() {
           <ThreadListContainer
             threads={filteredThreads()} 
             userId={userId || '未指定'} 
+            userProfile={userProfile || { id: '', username: '', image_url: '' }}
             isThreadLiked={isThreadLiked}
+            onThreadDeleted={handleThreadDeleted}
             isThreadFavorited={isThreadFavorited}
             groupId={groupId}
             unAuthenticated_toast={unAuthenticated_toast}
@@ -356,7 +367,9 @@ export default function GroupPage() {
             <ThreadListContainer
               threads={filteredThreads()} 
               userId={userId || '未指定'} 
+              userProfile={userProfile || { id: '', username: '', image_url: '' }}
               isThreadLiked={isThreadLiked}
+              onThreadDeleted={handleThreadDeleted}
               isThreadFavorited={isThreadFavorited}
               groupId={groupId}
               unAuthenticated_toast={unAuthenticated_toast}

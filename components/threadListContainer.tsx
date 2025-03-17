@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
 import ThreadListPresentation from "./threadListPresentation";
-import { Thread } from "@/components/types";
+import { Thread, UserProfile } from "@/components/types";
 import { useThreadActions } from "@/app/hooks/useThreadActions";
 import { useCommentActions } from "@/app/hooks/useCommentActions";
 import ErrorBoundary from "./errorBoundary";
@@ -9,6 +9,8 @@ import { ThreadLoadingError } from "./error";
 import { useThreads } from "@/app/hooks/useThreads";
 import { set } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
+import { createClient } from "@/app/utils/supabase/client";
+
 interface ThreadListContainerProps {
     threads?: Thread[];
     userId: string;
@@ -18,12 +20,16 @@ interface ThreadListContainerProps {
     isThreadFavorited: (threadId: string) => boolean;
     onLikeToggled?: (threadId: string, isLiked: boolean) => void;
     onFavoriteToggled?: (threadId: string, isFavorited: boolean) => void;
-    onCommentAdded?: (threadId: string) => void;
+    onCommentAdded?: (threadId: string, updatedThread: Thread) => void;
+    onThreadDeleted: (threadId: string) => void;
+    userProfile: UserProfile;
   }
 
 export default function ThreadListContainer({ 
   threads: initialThreads = [], 
   userId,
+  userProfile,
+  onThreadDeleted,
   unAuthenticated_toast,
   groupId,
   isThreadLiked, 
@@ -38,18 +44,19 @@ export default function ThreadListContainer({
   
   const { fetchThreadById } = useThreadActions();
   const { createComment } = useCommentActions(selectedThread?.id);
+  const { toast } = useToast();
 
   useEffect(() => {
-    setThreads(initialThreads || []);
-  }, [initialThreads]);
+    // 初回マウント時または実質的な変更がある場合のみ更新
+    if (!threads.length || JSON.stringify(initialThreads) !== JSON.stringify(threads)) {
+      setThreads(initialThreads || []);
+    }
+  }, [initialThreads, threads]);
 
   const closeModal = () => {
     setIsModalOpen(false);
     // 親コンポーネントにも非同期で通知（全体更新用）
-    if (onCommentAdded) {
-      // setTimeout でバックグラウンド実行にする
-      onCommentAdded(selectedThread?.id || "");
-    }
+ 
     setSelectedThread(null);
   };
 
@@ -88,23 +95,89 @@ export default function ThreadListContainer({
     unAuthenticated_toast();
     
     try {
-      console.log("コメント投稿中:", selectedThread.id);
-      await createComment(content, userId);
+      // 楽観的に選択中のスレッドのコメント数を増やす
+      setThreads(prevThreads => {
+        return prevThreads.map(thread => {
+          if (thread.id === selectedThread.id) {
+            const updatedThread = { 
+              ...thread, 
+              comments_count: (thread.comments_count || 0) + 1 
+            };
+            return updatedThread;
+          }
+          return thread;
+        });
+      });
       
-      // まず選択中のスレッドのみを更新
+      //モーダル内のスレッドも楽観的に更新
+      if (selectedThread) {
+        const tempCommentId = `temp-${Date.now()}`;
+        
+        // 仮のコメントオブジェクト - userProfileを使用
+        const optimisticComment = {
+          id: tempCommentId,
+          thread_id: selectedThread.id,
+          content: content,
+          created_at: new Date().toISOString(),
+          user: userProfile || { id: userId, username: 'ユーザー', image_url: '' }
+        };
+        
+        // モーダル内のスレッドの選択状態を更新
+        setSelectedThread(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            comments_count: (prev.comments_count || 0) + 1,
+            comments: [...(prev.comments || []), optimisticComment]
+          };
+        });
+      }
+      
+      // API呼び出し
+      const result = await createComment(content, userId);
+      
+      //API成功時: アップデートされたスレッドデータを取得して状態を更新
       const updatedThread = await fetchThreadById(selectedThread.id);
       setSelectedThread(updatedThread);
       
-      // リスト内の当該スレッドだけを更新
-      setThreads(prevThreads => 
-        prevThreads.map(thread => thread.id === selectedThread.id ? updatedThread : thread)
-      );
       
+      if (onCommentAdded) {
+        onCommentAdded(selectedThread.id,updatedThread);
+      }
       
     } catch (error) {
       console.error("コメント投稿エラー:", error);
+      
+      // ロールバック処理: 楽観的に増やしたコメント数を元に戻す
+      setThreads(prevThreads => {
+        return prevThreads.map(thread => {
+          if (thread.id === selectedThread.id) {
+            return { 
+              ...thread, 
+              comments_count: Math.max((thread.comments_count || 0) - 1, 0) 
+            };
+          }
+          return thread;
+        });
+      });
+      
+      setSelectedThread(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          comments_count: Math.max((prev.comments_count || 0) - 1, 0),
+          comments: prev.comments?.slice(0, -1) || []
+        };
+      });
+      
+      // エラーを表示
+      toast({
+        title: "エラー",
+        description: "コメントの投稿に失敗しました",
+        variant: "destructive",
+      });
     }
-  }, [selectedThread, createComment, userId, onCommentAdded, fetchThreadById]);
+  }, [selectedThread, createComment, userId, userProfile, onCommentAdded, fetchThreadById]);
 
   // コメント削除でも同様の修正
   const handleCommentDeleted = useCallback(async (commentId: string) => {
@@ -127,15 +200,7 @@ export default function ThreadListContainer({
   }, [selectedThread, fetchThreadById, onCommentAdded]);
 
   // スレッド削除後の処理
-  const handleThreadDeleted = useCallback((threadId: string) => {
-    setThreads(prevThreads => prevThreads.filter(thread => thread.id !== threadId));
-    
-    // モーダルで表示中のスレッドが削除された場合はモーダルを閉じる
-    if (selectedThread && selectedThread.id === threadId) {
-      closeModal();
-    }
-  }, [selectedThread]);
-
+  
   // いいねとお気に入りのコールバック
   const handleLikeToggled = useCallback((threadId: string, isLiked: boolean) => {
     console.log(`ThreadListContainer: いいねコールバック - スレッド ${threadId}:`, { 新状態: isLiked });
@@ -167,7 +232,7 @@ export default function ThreadListContainer({
        onAddComment={handleAddComment}
        unAuthenticated_toast={unAuthenticated_toast}
        onCommentDeleted={handleCommentDeleted}
-       onThreadDeleted={handleThreadDeleted}
+       onThreadDeleted={onThreadDeleted}
        onLikeToggled={handleLikeToggled}
        onFavoriteToggled={handleFavoriteToggled}
     />
