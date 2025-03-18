@@ -18,12 +18,12 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     
-    // スレッド情報を含めた通知クエリの構築
+
     let queryStr = `
       SELECT 
         n.*,
         CASE
-          WHEN n.type = 'thread' OR n.type = 'comment' OR n.type = 'like' THEN
+          WHEN n.type IN ('thread', 'comment', 'like') THEN
             (SELECT json_build_object(
               'id', t.id,
               'content', t.content,
@@ -40,44 +40,39 @@ export async function GET(request: Request) {
             WHERE t.id = n.related_id
             LIMIT 1)
           ELSE NULL
-        END AS thread_details
+        END AS thread_details,
+        CASE
+          WHEN n.type = 'comment' THEN
+            (SELECT json_build_object(
+              'id', c.id,
+              'content', c.content,
+              'thread_id', c.thread_id,
+              'user', json_build_object(
+                'id', u.id,
+                'username', u.username,
+                'image_url', u.image_url
+              )
+            )
+            FROM comments c
+            LEFT JOIN users u ON c.user_id = u.id
+            WHERE c.id = n.related_id
+            LIMIT 1)
+          ELSE NULL
+        END AS comment_details
+      
       FROM notifications n
       WHERE n.user_id = $1
+      ${type ? 'AND n.type = $2' : ''}
       ORDER BY n.created_at DESC
     `;
     
-    let params = [userId];
-    
-    if (type) {
-      queryStr = `
-        SELECT 
-          n.*,
-          CASE
-            WHEN n.type = 'thread' OR n.type = 'comment' OR n.type = 'like' THEN
-              (SELECT json_build_object(
-                'id', t.id,
-                'content', t.content,
-                'group_id', t.group_id,
-                'created_at', t.created_at,
-                'user', json_build_object(
-                  'id', u.id,
-                  'username', u.username,
-                  'image_url', u.image_url
-                )
-              )
-              FROM threads t
-              LEFT JOIN users u ON t.user_id = u.id
-              WHERE t.id = n.related_id
-              LIMIT 1)
-            ELSE NULL
-          END AS thread_details
-        FROM notifications n
-        WHERE n.user_id = $1 AND n.type = $2
-        ORDER BY n.created_at DESC
-      `;
-      params = [userId, type];
-    }
-    
+    let params = type ? [userId, type] : [userId];
+    //コメントにもいいね機能をつけた場合はlike_threadとlike_commentで分けて適切なデータを取得する予定
+
+
+
+
+
     const notifications = await sql.unsafe(queryStr, params);
     
     return NextResponse.json(notifications);

@@ -34,7 +34,7 @@ export async function POST(req: Request) {
         userId: commentOwnerId,
         type: 'comment',
         content: `${username}さんがあなたのスレッドにコメントしました`,
-        relatedId: threadId,
+        relatedId: result[0].id,
         actorId: createdBy,
         actorName: username,
         actorImage: userImage

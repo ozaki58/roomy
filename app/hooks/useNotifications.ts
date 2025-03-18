@@ -13,6 +13,12 @@ export interface Notification {
   thread_details: {
     content: string;
   };
+  comment_details: {
+    content: string;
+  };
+  // like_details: {
+  //   content: string;
+  // };
 }
 
 export function useNotifications() {

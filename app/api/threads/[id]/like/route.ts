@@ -5,13 +5,13 @@ import { createNotification, getThreadOwner } from "@/lib/notifications";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }  // [id] フォルダ名に合わせる
+  { params }: { params: { id: string } } 
 ) {
   try {
-    const threadId = params.id;  // URLパラメータから threadId を取得
+    const threadId = params.id;  
     const supabase = await createClient();
     
-    // 認証されたユーザーを取得
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "認証されていません" }, { status: 401 });
@@ -22,21 +22,20 @@ export async function POST(
     if (like) {
       const result = await createLike(user.id, threadId);
       
-      // スレッド作成者を取得
+ 
       const threadOwnerId = await getThreadOwner(threadId);
       
-      // 自分自身のスレッドにいいねした場合は通知しない
+ 
       if (threadOwnerId && threadOwnerId !== user.id) {
-        // ユーザー情報を取得
+    
        const userData = await UserDetailById(user.id)
         
         const username = userData[0].username || 'ユーザー';
         const userImage = userData[0].image_url || null;
-        
-        // スレッド作成者に通知を作成（アクター情報を含む）
+      
         await createNotification({
           userId: threadOwnerId,
-          type: 'like',
+          type: 'like',         //コメントにいいね機能をつけた際はここをlike_threadに変更する予定
           content: `${username}さんがあなたのスレッドにいいねしました`,
           relatedId: threadId,
           actorId: user.id,
