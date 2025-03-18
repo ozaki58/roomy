@@ -164,9 +164,24 @@ export default function NotificationPage() {
                             {formatDate(notification.created_at)}
                           </p>
                         </div>
-                        <p className="texs-m text-gray-500 mt-1 ml-2">
-                            {notification.thread_details.content}
+                        {notification.type === 'comment' && (
+                          <p className="texs-m text-gray-500 mt-1 ml-2">
+                            {notification.comment_details?.content || 'このコメントは削除されました'}
                           </p>
+                        )}
+                        {notification.type === 'thread' && (
+                          <p className="texs-m text-gray-500 mt-1 ml-2">
+                            {notification.thread_details?.content || 'このスレッドは削除されました'}
+                          </p>
+                        )}
+                        {notification.type === 'like' && (
+                          <p className="texs-m text-gray-500 mt-1 ml-2">
+                            {notification.thread_details?.content || 'このいいねは削除されました'}
+                          </p>
+                        )} 
+                        
+              {/* //コメントにもいいね機能をつけた場合はlikeタイプスレッドとコメントで分けて適切なデータを取得する予定
+               */}
                         {notification.related_id && (
                           <p className="text-sm text-gray-600 mt-1 ml-8">
                             スレッドをタップして表示
