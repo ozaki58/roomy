@@ -53,3 +53,63 @@ export interface Group {
 }
 
 
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export interface Database {
+  public: {
+    Tables: {
+      test_groups: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          tags: string[] | null
+          embedding: number[] | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          tags?: string[] | null
+          embedding?: number[] | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          tags?: string[] | null
+          embedding?: number[] | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+    }
+    Functions: {
+      match_test_groups: {
+        Args: {
+          query_embedding: number[]
+          match_threshold: number
+          match_count: number
+        }
+        Returns: {
+          id: string
+          name: string
+          description: string | null
+          tags: string[] | null
+          similarity: number
+        }[]
+      }
+    }
+  }
+}
